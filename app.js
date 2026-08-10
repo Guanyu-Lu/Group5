@@ -44,7 +44,8 @@ const STORE = {
   caregivers: 'carelink_caregivers',
   week: 'carelink_week',
   sharing: 'carelink_sharing',
-  wearable: 'carelink_wearable'
+  wearable: 'carelink_wearable',
+  largeText: 'carelink_large_text'
 };
 
 let bpChart = null;
@@ -63,6 +64,24 @@ function getMeds() { return getJSON(STORE.meds, DEFAULT_MEDS); }
 function getCaregivers() { return getJSON(STORE.caregivers, DEFAULT_CAREGIVERS); }
 function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
+
+function isLargeTextMode() { return localStorage.getItem(STORE.largeText) === 'true'; }
+function syncLargeTextUI() {
+  const enabled = isLargeTextMode();
+  document.body.classList.toggle('large-text-mode', enabled);
+  const btn = $('largeTextToggle');
+  const status = $('largeTextStatus');
+  if (btn) {
+    btn.textContent = enabled ? 'Back to standard text' : 'Switch to large text';
+    btn.setAttribute('aria-pressed', String(enabled));
+  }
+  if (status) status.textContent = enabled ? 'Large text mode enabled' : 'Standard text mode';
+}
+function toggleLargeTextMode() {
+  localStorage.setItem(STORE.largeText, String(!isLargeTextMode()));
+  syncLargeTextUI();
+  toast(isLargeTextMode() ? 'Large text mode enabled.' : 'Standard text mode restored.');
+}
 
 function esc(value='') { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
 
@@ -382,7 +401,7 @@ function resetDemoData(){
 
 function demoBooking(service){ openModal(service,`<div class="insight-summary"><div class="insight-icon">✓</div><div><strong>Demo request created</strong><p>This prototype does not connect to a real healthcare provider. In a production system, this step would hand off to an approved provider workflow.</p></div></div><button class="button primary" id="closeDemoBooking">Done</button>`); $('closeDemoBooking').onclick=closeModal; }
 
-function renderAll(){ renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); }
+function renderAll(){ renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
 
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
@@ -391,6 +410,8 @@ function init(){
   if(!localStorage.getItem(STORE.week)) setJSON(STORE.week,DEFAULT_WEEK);
   if(!localStorage.getItem(STORE.sharing)) setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false});
   if(!localStorage.getItem(STORE.wearable)) localStorage.setItem(STORE.wearable,'false');
+  if(!localStorage.getItem(STORE.largeText)) localStorage.setItem(STORE.largeText,'false');
+  syncLargeTextUI();
   setDefaultReadingTime();
 
   $$('.nav-item').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
@@ -415,6 +436,7 @@ function init(){
   $('connectApiBtn').onclick=connectApi; $('disconnectApiBtn').onclick=disconnectApi;
   $('toggleKeyBtn').onclick=()=>{const input=$('apiKeyInput');const show=input.type==='password';input.type=show?'text':'password';$('toggleKeyBtn').textContent=show?'Hide':'Show';};
   $('resetAllBtn').onclick=resetDemoData;
+  if($('largeTextToggle')) $('largeTextToggle').onclick=toggleLargeTextMode;
   $('modalClose').onclick=closeModal; $('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
   renderAll();

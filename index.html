@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=md-preview-5" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=large-text-6" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=md-preview-5" />
+  <link rel="stylesheet" href="styles.css?v=large-text-6" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=md-preview-5" defer></script>
+  <script src="app.js?v=large-text-6" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=md-preview-5" alt="" />
+          <img src="carelink-logo.png?v=large-text-6" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -269,23 +269,24 @@
         </article>
 
         <div class="two-col settings-two-col">
-          <article class="card brand-identity-card">
-            <p class="eyebrow">BRAND IDENTITY</p>
-            <div class="brand-preview">
-              <div class="brand-preview-mark"><img src="carelink-logo.png?v=md-preview-5" alt="" /></div>
+          <article class="card display-mode-card">
+            <p class="eyebrow">DISPLAY MODE</p>
+            <h3>Large text version</h3>
+            <p>Switch the whole prototype to a larger text layout for presentation, accessibility, or easier classroom demonstration.</p>
+            <div class="display-mode-preview" aria-hidden="true">
+              <span>Aa</span>
               <div>
-                <div class="brand-preview-name"><span>CareLink</span><b>SG</b></div>
-                <p>AI-powered Community Health Companion</p>
+                <strong>CareLink SG</strong>
+                <small>Large text preview</small>
               </div>
             </div>
-            <p class="brand-note">A single icon is used consistently across the prototype for a cleaner, production-style identity.</p>
+            <div class="display-mode-actions">
+              <button class="button primary" id="largeTextToggle" type="button" aria-pressed="false">Switch to large text</button>
+              <span class="subtle" id="largeTextStatus">Standard text mode</span>
+            </div>
           </article>
-          <article class="card"><p class="eyebrow">PROTOTYPE DATA</p><h3>Reset local demo state</h3><p>Restore default health readings, medications, care network, and sharing settings.</p><button class="button secondary" id="resetAllBtn">Reset demo data</button></article>
-        </div>
 
-        <div class="two-col">
-          <article class="card"><p class="eyebrow">DEPLOYMENT</p><h3>GitHub Pages ready</h3><p>This project is static HTML/CSS/JavaScript. No build step is required.</p><div class="code-line">Settings → Pages → Deploy from branch → main / root</div></article>
-          <article class="card"><p class="eyebrow">BRAND SYSTEM</p><h3>One identity, used consistently</h3><p>The interface now uses one icon-only CareLink SG mark, a consistent wordmark treatment, and matching spacing, corner radius, and shadow styling across the product.</p></article>
+          <article class="card"><p class="eyebrow">PROTOTYPE DATA</p><h3>Reset local demo state</h3><p>Restore default health readings, medications, care network, and sharing settings.</p><button class="button secondary" id="resetAllBtn">Reset demo data</button></article>
         </div>
       </section>
     </main>
