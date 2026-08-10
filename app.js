@@ -65,6 +65,85 @@ function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
 
 function esc(value='') { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
+
+function inlineMarkdown(value='') {
+  return esc(value)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/__([^_]+)__/g, '<strong>$1</strong>');
+}
+
+function markdownToHtml(markdown='') {
+  const lines = String(markdown || '').replace(/\r\n/g, '\n').split('\n');
+  let html = '';
+  let inList = false;
+  let paragraph = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    html += `<p>${inlineMarkdown(paragraph.join(' '))}</p>`;
+    paragraph = [];
+  };
+  const closeList = () => {
+    if (inList) {
+      html += '</ul>';
+      inList = false;
+    }
+  };
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      closeList();
+      return;
+    }
+
+    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      closeList();
+      const level = Math.min(4, heading[1].length + 3);
+      html += `<h${level}>${inlineMarkdown(heading[2])}</h${level}>`;
+      return;
+    }
+
+    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      if (!inList) {
+        html += '<ul>';
+        inList = true;
+      }
+      html += `<li>${inlineMarkdown(bullet[1])}</li>`;
+      return;
+    }
+
+    const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
+    if (numbered) {
+      flushParagraph();
+      if (!inList) {
+        html += '<ul>';
+        inList = true;
+      }
+      html += `<li>${inlineMarkdown(numbered[1])}</li>`;
+      return;
+    }
+
+    closeList();
+    paragraph.push(trimmed);
+  });
+
+  flushParagraph();
+  closeList();
+  return html || '<p></p>';
+}
+
+function setMarkdown(el, text) {
+  if (!el) return;
+  el.innerHTML = markdownToHtml(text);
+}
+
 function fmtDate(value) { return new Intl.DateTimeFormat('en-SG', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }).format(new Date(value)); }
 function fmtShortDate(value) { return new Intl.DateTimeFormat('en-SG', { day:'2-digit', month:'short' }).format(new Date(value)); }
 function toast(message) { const el=$('toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('show'),2800); }
@@ -203,11 +282,11 @@ async function analyzeHealth(target='insights'){
   else { out.classList.remove('placeholder-output'); out.innerHTML='<span class="loading">Generating insight with Gemini 2.5 Flash</span>'; }
   try{
     const text=await callGemini(prompt);
-    if(target==='dashboard') out.innerHTML=`<div class="insight-icon">✦</div><div><strong>Gemini summary</strong><p>${esc(text).replace(/\n/g,'<br>')}</p></div>`;
-    else out.textContent=text;
+    if(target==='dashboard') out.innerHTML=`<div class="insight-icon">✦</div><div><strong>Gemini summary</strong><div class="markdown-body compact">${markdownToHtml(text)}</div></div>`;
+    else setMarkdown(out, text);
   }catch(err){
     if(target==='dashboard') out.innerHTML=`<div class="insight-icon">!</div><div><strong>AI request failed</strong><p>${esc(err.message)}</p></div>`;
-    else out.textContent=`Could not generate insight: ${err.message}`;
+    else out.innerHTML=`<p>Could not generate insight: ${esc(err.message)}</p>`;
     toast('Gemini request failed. Check the API key/quota.');
   }
 }
@@ -249,7 +328,12 @@ function renderAssistantContext(){
 
 function addChatMessage(role,text,loading=false){
   const wrap=document.createElement('div'); wrap.className=`message ${role==='user'?'user':'ai'}`;
-  wrap.innerHTML=`<span class="message-avatar">${role==='user'?'AT':'✦'}</span><div><strong>${role==='user'?'Alex':'CareLink AI'}</strong><p class="${loading?'loading':''}">${esc(text)}</p></div>`;
+  const body = loading
+    ? `<p class="loading">${esc(text)}</p>`
+    : role === 'ai'
+      ? `<div class="message-markdown markdown-body compact">${markdownToHtml(text)}</div>`
+      : `<p>${esc(text)}</p>`;
+  wrap.innerHTML=`<span class="message-avatar">${role==='user'?'AT':'✦'}</span><div><strong>${role==='user'?'Alex':'CareLink AI'}</strong>${body}</div>`;
   $('chatMessages').appendChild(wrap); $('chatMessages').scrollTop=$('chatMessages').scrollHeight; return wrap;
 }
 
