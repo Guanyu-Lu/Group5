@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
+  <title>CareLink SG — Community Health Companion</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">+</div>
+        <div>
+          <strong>CareLink SG</strong>
+          <span>Community Health Companion</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-item active" data-view="dashboard"><span>⌂</span> Dashboard</button>
+        <button class="nav-item" data-view="monitoring"><span>⌁</span> Health Monitoring</button>
+        <button class="nav-item" data-view="insights"><span>✦</span> AI Insights</button>
+        <button class="nav-item" data-view="medication"><span>◉</span> Medication</button>
+        <button class="nav-item" data-view="care"><span>♡</span> Care Network</button>
+        <button class="nav-item" data-view="community"><span>⌖</span> Community Care</button>
+        <button class="nav-item" data-view="assistant"><span>✧</span> AI Assistant</button>
+        <button class="nav-item" data-view="settings"><span>⚙</span> Settings</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="privacy-note">
+          <strong>Prototype mode</strong>
+          <span>Demo data stays in this browser.</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-only" id="menuBtn" aria-label="Open navigation">☰</button>
+          <div>
+            <p class="eyebrow">HEALTHCARE BEYOND HOSPITALS</p>
+            <h1 id="pageTitle">Dashboard</h1>
+          </div>
+        </div>
+        <div class="top-actions">
+          <div class="api-pill disconnected" id="apiPill"><span class="dot"></span><span id="apiStatusText">Gemini disconnected</span></div>
+          <button class="button secondary small" id="apiTopBtn">Connect API</button>
+          <div class="avatar" title="Demo profile">AT</div>
+        </div>
+      </header>
+
+      <div class="safety-banner">
+        <strong>Demo only:</strong> CareLink SG supports health awareness and care coordination. It does not diagnose conditions or replace qualified healthcare professionals.
+      </div>
+
+      <section class="view active" id="view-dashboard">
+        <div class="hero-card">
+          <div>
+            <span class="status-chip green">● Daily check-in ready</span>
+            <h2>Good afternoon, Alex.</h2>
+            <p>Your home health snapshot is ready. Review trends, medication, and AI-supported insights in one place.</p>
+            <div class="hero-actions">
+              <button class="button primary" data-go="monitoring">Add health reading</button>
+              <button class="button ghost" id="wearableBtn">Connect smartwatch</button>
+            </div>
+          </div>
+          <div class="health-score-wrap">
+            <div class="score-ring" id="scoreRing"><span id="healthScore">86</span><small>/100</small></div>
+            <div><strong id="scoreLabel">Stable</strong><span>Today’s wellness score</span></div>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card"><div class="metric-icon">♥</div><div class="metric-label">Heart rate</div><div class="metric-value"><span id="dashHr">72</span> <small>bpm</small></div><div class="metric-foot positive">Within demo range</div></article>
+          <article class="metric-card"><div class="metric-icon">≈</div><div class="metric-label">Blood pressure</div><div class="metric-value"><span id="dashBp">118/76</span></div><div class="metric-foot positive" id="dashBpLabel">Stable trend</div></article>
+          <article class="metric-card"><div class="metric-icon">◌</div><div class="metric-label">Sleep</div><div class="metric-value"><span id="dashSleep">7.2</span> <small>hrs</small></div><div class="metric-foot">Last night</div></article>
+          <article class="metric-card"><div class="metric-icon">↟</div><div class="metric-label">Steps</div><div class="metric-value"><span id="dashSteps">6,420</span></div><div class="progress"><span id="stepsProgress" style="width:80%"></span></div><div class="metric-foot">Goal: 8,000</div></article>
+        </div>
+
+        <div class="two-col">
+          <article class="card">
+            <div class="card-head"><div><p class="eyebrow">AI HEALTH STATUS</p><h3>Daily health summary</h3></div><button class="text-button" data-go="insights">View insights →</button></div>
+            <div class="insight-summary" id="dashboardInsight">
+              <div class="insight-icon">✦</div>
+              <div><strong>Your recent demo readings look generally stable.</strong><p>Connect Gemini for a plain-language summary based on the health data stored in this prototype.</p></div>
+            </div>
+            <button class="button secondary" id="dashboardAnalyzeBtn">Generate AI summary</button>
+          </article>
+
+          <article class="card">
+            <div class="card-head"><div><p class="eyebrow">TODAY</p><h3>Care plan</h3></div><span class="subtle" id="todayDate"></span></div>
+            <div class="timeline" id="carePlanList"></div>
+          </article>
+        </div>
+
+        <article class="card wearable-card" id="wearableCard">
+          <div><p class="eyebrow">CONNECTED HEALTH</p><h3>Bring wearable data into the journey</h3><p>Simulate a smartwatch connection to demonstrate automatic home monitoring without requiring a real device integration.</p></div>
+          <div class="wearable-status"><span class="device-icon">⌚</span><div><strong id="wearableName">No device connected</strong><span id="wearableStatus">Manual readings only</span></div><button class="button secondary small" id="wearableInlineBtn">Connect</button></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-monitoring">
+        <div class="section-intro"><div><p class="eyebrow">REMOTE MONITORING</p><h2>Health Monitoring</h2><p>Record home readings and visualize changes over time.</p></div><button class="button secondary" id="seedTrendBtn">Load rising-BP demo</button></div>
+
+        <div class="monitor-grid">
+          <article class="card form-card">
+            <h3>Add a health reading</h3>
+            <form id="healthForm">
+              <div class="form-grid">
+                <label>Date & time<input type="datetime-local" id="readingDate" required /></label>
+                <label>Heart rate (bpm)<input type="number" id="heartRate" min="35" max="220" value="72" required /></label>
+                <label>Systolic BP<input type="number" id="systolic" min="60" max="250" value="118" required /></label>
+                <label>Diastolic BP<input type="number" id="diastolic" min="35" max="150" value="76" required /></label>
+                <label>Sleep (hours)<input type="number" id="sleepHours" min="0" max="24" step="0.1" value="7.2" required /></label>
+                <label>Steps<input type="number" id="steps" min="0" max="100000" value="6420" required /></label>
+              </div>
+              <button class="button primary" type="submit">Save reading</button>
+            </form>
+          </article>
+
+          <article class="card current-reading">
+            <p class="eyebrow">LATEST READING</p>
+            <div class="current-bp"><span id="latestBp">118/76</span><small>mmHg</small></div>
+            <div class="risk-row"><span class="status-chip green" id="latestRiskChip">Demo status: stable</span></div>
+            <p class="subtle">Status labels are simplified prototype logic, not medical diagnosis.</p>
+          </article>
+        </div>
+
+        <article class="card chart-card">
+          <div class="card-head"><div><p class="eyebrow">7-DAY VIEW</p><h3>Blood pressure trend</h3></div><button class="text-button danger" id="clearReadingsBtn">Reset demo readings</button></div>
+          <div class="chart-wrap"><canvas id="bpChart" aria-label="Blood pressure trend chart"></canvas></div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><div><p class="eyebrow">READING HISTORY</p><h3>Recent entries</h3></div><span class="subtle" id="readingCount"></span></div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>BP</th><th>Heart rate</th><th>Sleep</th><th>Steps</th><th></th></tr></thead><tbody id="readingsTable"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-insights">
+        <div class="section-intro"><div><p class="eyebrow">GEMINI 2.5 FLASH</p><h2>AI Health Insights</h2><p>Turn recent home readings into a simple, safety-oriented explanation.</p></div><button class="button primary" id="analyzeBtn">Analyze recent trends</button></div>
+
+        <div class="three-col insight-kpis">
+          <article class="mini-card"><span>Trend engine</span><strong id="trendStatus">Checking…</strong><small>Rule-based prototype</small></article>
+          <article class="mini-card"><span>Gemini model</span><strong>2.5 Flash</strong><small id="insightApiState">API not connected</small></article>
+          <article class="mini-card"><span>Data window</span><strong id="dataWindow">7 readings</strong><small>Latest stored entries</small></article>
+        </div>
+
+        <article class="card ai-result-card">
+          <div class="ai-result-head"><div class="ai-orb">✦</div><div><p class="eyebrow">AI-GENERATED EXPLANATION</p><h3>CareLink Insight</h3></div></div>
+          <div id="aiInsightResult" class="ai-output placeholder-output">
+            Connect your Gemini API key, then select <strong>Analyze recent trends</strong>. The prompt includes only the demo readings shown in this prototype.
+          </div>
+          <div class="ai-disclaimer">AI-generated content may be inaccurate. It should support awareness, not diagnose disease or replace professional medical advice.</div>
+        </article>
+
+        <article class="card">
+          <div class="card-head"><div><p class="eyebrow">WHY AM I SEEING THIS?</p><h3>Transparent prototype logic</h3></div></div>
+          <div class="logic-grid">
+            <div><span class="logic-num">01</span><strong>Collect</strong><p>Use the latest stored home readings.</p></div>
+            <div><span class="logic-num">02</span><strong>Detect</strong><p>Simple local rules flag sustained changes for demonstration.</p></div>
+            <div><span class="logic-num">03</span><strong>Explain</strong><p>Gemini converts the data and rule signal into understandable language.</p></div>
+            <div><span class="logic-num">04</span><strong>Escalate safely</strong><p>The prompt avoids diagnosis and encourages professional support when appropriate.</p></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-medication">
+        <div class="section-intro"><div><p class="eyebrow">MEDICATION ADHERENCE</p><h2>Medication Manager</h2><p>Track a simple home medication schedule and adherence history.</p></div><button class="button primary" id="addMedicationBtn">+ Add medication</button></div>
+
+        <div class="med-summary-grid">
+          <article class="card adherence-card"><div><p class="eyebrow">THIS WEEK</p><div class="big-number"><span id="adherencePct">92</span>%</div><p>Medication adherence</p></div><div class="adherence-ring"><span id="adherenceRingText">6/7</span><small>completed</small></div></article>
+          <article class="card"><p class="eyebrow">NEXT REMINDER</p><h3 id="nextMedName">Metformin</h3><div class="next-reminder"><strong id="nextMedTime">8:00 PM</strong><span id="nextMedDose">500 mg · 1 tablet</span></div></article>
+        </div>
+
+        <div class="med-list" id="medicationList"></div>
+
+        <article class="card">
+          <div class="card-head"><div><p class="eyebrow">7-DAY ADHERENCE</p><h3>Weekly history</h3></div></div>
+          <div class="week-strip" id="weekStrip"></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-care">
+        <div class="section-intro"><div><p class="eyebrow">CONNECTED CARE</p><h2>Care Network</h2><p>Give users control over what health information is shared with trusted supporters.</p></div><button class="button primary" id="addCaregiverBtn">+ Add caregiver</button></div>
+
+        <div class="care-grid" id="caregiverList"></div>
+
+        <article class="card">
+          <div class="card-head"><div><p class="eyebrow">SHARING CONTROLS</p><h3>Choose what to share</h3></div><span class="status-chip blue">User-controlled</span></div>
+          <div class="toggle-list">
+            <label class="toggle-row"><span><strong>Blood pressure</strong><small>Latest readings and trends</small></span><input type="checkbox" data-share="bp" checked><i></i></label>
+            <label class="toggle-row"><span><strong>Heart rate</strong><small>Latest heart-rate readings</small></span><input type="checkbox" data-share="hr" checked><i></i></label>
+            <label class="toggle-row"><span><strong>Medication adherence</strong><small>Completed and missed doses</small></span><input type="checkbox" data-share="meds" checked><i></i></label>
+            <label class="toggle-row"><span><strong>Sleep</strong><small>Nightly duration</small></span><input type="checkbox" data-share="sleep"><i></i></label>
+          </div>
+        </article>
+
+        <article class="card alert-demo">
+          <div class="alert-icon">!</div><div><p class="eyebrow">CARE ALERT DEMO</p><h3>Unusual trend detected</h3><p>Demonstrate how a user could share a non-emergency health trend with a trusted caregiver.</p></div><button class="button secondary" id="notifyCaregiverBtn">Notify caregiver</button>
+        </article>
+      </section>
+
+      <section class="view" id="view-community">
+        <div class="section-intro"><div><p class="eyebrow">COMMUNITY SUPPORT</p><h2>Community Care</h2><p>Prototype pathways from home monitoring to appropriate community-based support.</p></div></div>
+
+        <div class="community-grid">
+          <article class="service-card"><div class="service-icon">＋</div><span class="status-chip blue">Demo service</span><h3>Community Health Centre</h3><p>Request a non-urgent follow-up for ongoing monitoring or health education.</p><button class="button secondary book-demo" data-service="Community Health Centre">Request follow-up</button></article>
+          <article class="service-card"><div class="service-icon">◫</div><span class="status-chip blue">Demo service</span><h3>Telehealth Consultation</h3><p>Show how users could transition from digital monitoring to a remote consultation.</p><button class="button secondary book-demo" data-service="Telehealth Consultation">Request consultation</button></article>
+          <article class="service-card"><div class="service-icon">♡</div><span class="status-chip blue">Demo service</span><h3>Caregiver Support</h3><p>Coordinate family or community support while keeping the user in control of sharing.</p><button class="button secondary book-demo" data-service="Caregiver Support">View support options</button></article>
+        </div>
+
+        <article class="card pathway-card">
+          <div><p class="eyebrow">CARE PATHWAY</p><h3>From home data to community support</h3></div>
+          <div class="pathway"><div><span>1</span><strong>Monitor at home</strong><small>Health readings</small></div><b>→</b><div><span>2</span><strong>Identify a trend</strong><small>Local rules + AI</small></div><b>→</b><div><span>3</span><strong>Share intentionally</strong><small>Care network</small></div><b>→</b><div><span>4</span><strong>Seek support</strong><small>Community care</small></div></div>
+        </article>
+
+        <div class="urgent-note"><strong>Urgent situations:</strong> This prototype is not an emergency service. In a real product, emergency guidance should be designed with qualified clinical and local-service input.</div>
+      </section>
+
+      <section class="view" id="view-assistant">
+        <div class="assistant-layout">
+          <article class="card chat-card">
+            <div class="chat-head"><div class="ai-orb">✦</div><div><h2>CareLink AI Assistant</h2><p>Powered by Gemini 2.5 Flash when connected</p></div><span class="status-chip" id="chatApiChip">Offline</span></div>
+            <div class="quick-prompts" id="quickPrompts">
+              <button>Summarize my recent health trends</button>
+              <button>Explain my blood-pressure pattern simply</button>
+              <button>What is on my medication schedule?</button>
+              <button>How active was I this week?</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+              <div class="message ai"><span class="message-avatar">✦</span><div><strong>CareLink AI</strong><p>Hi Alex. I can explain the demo health data in this prototype. Connect a Gemini API key to start.</p></div></div>
+            </div>
+            <form class="chat-input" id="chatForm"><textarea id="chatInput" rows="1" placeholder="Ask about the health data in this demo…"></textarea><button class="button primary" type="submit">Send</button></form>
+            <div class="ai-disclaimer">For educational prototype use only. Do not rely on the assistant for diagnosis, emergencies, or treatment decisions.</div>
+          </article>
+
+          <aside class="card context-card">
+            <p class="eyebrow">CONTEXT SHARED WITH AI</p><h3>Current demo snapshot</h3>
+            <div id="assistantContext"></div>
+            <p class="subtle">Only the displayed prototype data and conversation text are sent when you use an AI feature.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="section-intro"><div><p class="eyebrow">SETUP</p><h2>Settings & API Connection</h2><p>Connect Gemini at presentation time without committing a secret to GitHub.</p></div></div>
+
+        <article class="card api-card">
+          <div class="api-card-head"><div><div class="gemini-logo">✦</div><div><p class="eyebrow">GOOGLE GEMINI API</p><h3>Gemini 2.5 Flash</h3></div></div><span class="status-chip" id="settingsApiChip">Disconnected</span></div>
+          <div class="api-input-row">
+            <label class="grow">API key<div class="password-wrap"><input type="password" id="apiKeyInput" autocomplete="off" placeholder="Paste API key for this browser session"><button type="button" id="toggleKeyBtn" aria-label="Show or hide API key">Show</button></div></label>
+            <button class="button primary" id="connectApiBtn">Connect & test</button>
+            <button class="button danger-outline" id="disconnectApiBtn">Clear / Disconnect</button>
+          </div>
+          <div class="connection-detail" id="connectionDetail">No API key is stored.</div>
+          <div class="security-box"><strong>Presentation-safe approach</strong><p>The key is stored only in <code>sessionStorage</code>, so it is not written into your repository and is removed when this browser tab/session ends. Clicking <strong>Clear / Disconnect</strong> removes it immediately. Because this is still a client-side demo, use a dedicated/restricted key and do not treat this as production security.</p></div>
+        </article>
+
+        <div class="two-col">
+          <article class="card"><p class="eyebrow">PROTOTYPE DATA</p><h3>Reset local demo state</h3><p>Restore default health readings, medications, care network, and sharing settings.</p><button class="button secondary" id="resetAllBtn">Reset demo data</button></article>
+          <article class="card"><p class="eyebrow">DEPLOYMENT</p><h3>GitHub Pages ready</h3><p>This project is static HTML/CSS/JavaScript. No build step is required.</p><div class="code-line">Settings → Pages → Deploy from branch → main / root</div></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+      <h3 id="modalTitle">Modal</h3>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
