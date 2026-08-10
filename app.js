@@ -63,7 +63,6 @@ function getMeds() { return getJSON(STORE.meds, DEFAULT_MEDS); }
 function getCaregivers() { return getJSON(STORE.caregivers, DEFAULT_CAREGIVERS); }
 function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
-
 function esc(value='') { return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c])); }
 function fmtDate(value) { return new Intl.DateTimeFormat('en-SG', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }).format(new Date(value)); }
 function fmtShortDate(value) { return new Intl.DateTimeFormat('en-SG', { day:'2-digit', month:'short' }).format(new Date(value)); }
@@ -301,6 +300,7 @@ function demoBooking(service){ openModal(service,`<div class="insight-summary"><
 function renderAll(){ renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); }
 
 function init(){
+  localStorage.removeItem('carelink_logo_choice'); // remove legacy logo-choice state from earlier prototype versions
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
   if(!localStorage.getItem(STORE.meds)) setJSON(STORE.meds,DEFAULT_MEDS);
   if(!localStorage.getItem(STORE.caregivers)) setJSON(STORE.caregivers,DEFAULT_CAREGIVERS);
