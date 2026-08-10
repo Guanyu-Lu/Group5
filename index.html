@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=large-text-6" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=privacy-7" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=large-text-6" />
+  <link rel="stylesheet" href="styles.css?v=privacy-7" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=large-text-6" defer></script>
+  <script src="app.js?v=privacy-7" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=large-text-6" alt="" />
+          <img src="carelink-logo.png?v=privacy-7" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -288,6 +288,60 @@
 
           <article class="card"><p class="eyebrow">PROTOTYPE DATA</p><h3>Reset local demo state</h3><p>Restore default health readings, medications, care network, and sharing settings.</p><button class="button secondary" id="resetAllBtn">Reset demo data</button></article>
         </div>
+
+        <div class="settings-info-grid">
+          <article class="card info-card about-card">
+            <div class="info-card-icon">i</div>
+            <p class="eyebrow">ABOUT</p>
+            <h3>About CareLink SG</h3>
+            <p>CareLink SG is an AI-powered community health companion prototype for the Healthcare Beyond Hospitals design challenge. It demonstrates how home health readings, medication routines, caregiver sharing, and community support can be connected in one simple digital journey.</p>
+            <div class="info-list compact">
+              <span>Remote monitoring</span>
+              <span>Medication adherence</span>
+              <span>Caregiver coordination</span>
+              <span>Gemini AI explanation</span>
+            </div>
+          </article>
+
+          <article class="card info-card privacy-card">
+            <div class="info-card-icon shield">✓</div>
+            <p class="eyebrow">PRIVACY PROTECTION</p>
+            <h3>Privacy protection statement</h3>
+            <p>This classroom prototype is designed to minimise data exposure. Demo health readings, medications, caregiver names, and display preferences stay in this browser unless an AI feature is used.</p>
+            <ul class="privacy-list">
+              <li>Gemini API key is stored only in <code>sessionStorage</code> and can be removed with <strong>Clear / Disconnect</strong>.</li>
+              <li>Prototype data is stored locally in the browser through <code>localStorage</code>.</li>
+              <li>When AI analysis or chat is used, only the displayed demo snapshot and user message are sent to Gemini.</li>
+              <li>This is not a production medical system and does not replace professional healthcare advice.</li>
+            </ul>
+          </article>
+        </div>
+
+        <article class="card qa-card">
+          <div class="card-head"><div><p class="eyebrow">Q&A</p><h3>Common questions for demonstration</h3></div><span class="status-chip blue">Presentation ready</span></div>
+          <div class="qa-list">
+            <details open>
+              <summary>What problem does CareLink SG solve?</summary>
+              <p>It helps show how basic health monitoring can move from hospital-only care into home and community settings. Users can record readings, see trends, receive AI-supported explanations, and involve caregivers when needed.</p>
+            </details>
+            <details>
+              <summary>Is this a real medical diagnosis tool?</summary>
+              <p>No. It is a design prototype. The AI output is only for awareness and demonstration, and the interface repeatedly reminds users to consult qualified healthcare professionals for real health concerns.</p>
+            </details>
+            <details>
+              <summary>Why does the prototype use Gemini?</summary>
+              <p>Gemini 2.5 Flash is used to turn structured demo data into plain-language summaries. This demonstrates the AI capability required by the IT track without requiring a full clinical AI model.</p>
+            </details>
+            <details>
+              <summary>What data is sent to AI?</summary>
+              <p>Only the current demo snapshot shown in the app, such as recent readings, medication status, trend signal, and the user's chat question. The API key is not committed to GitHub.</p>
+            </details>
+            <details>
+              <summary>How can this be extended in the future?</summary>
+              <p>A future version could connect real wearable data, add a secure backend, integrate appointment booking, support multilingual caregivers, and provide stronger consent controls.</p>
+            </details>
+          </div>
+        </article>
       </section>
     </main>
   </div>
