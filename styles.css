@@ -144,7 +144,7 @@ button { cursor: pointer; }
   height: 30px;
   display: block;
   margin: auto;
-  transform: translateY(2px);
+  transform: translateY(3.5px);
   fill: none;
   stroke: var(--primary);
   stroke-width: 1.9;
