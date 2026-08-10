@@ -849,3 +849,424 @@ body.large-text-mode .info-list.compact span {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ===== CareLink SG mobile responsive patch v13 =====
+   Makes the dashboard usable on phones without changing the desktop layout. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 920px) {
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .app-shell {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .main {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 18px 34px !important;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: min(300px, 88vw) !important;
+    min-width: 0 !important;
+    height: 100vh !important;
+    transform: translateX(-105%) !important;
+    transition: transform .22s ease !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 1000 !important;
+    box-shadow: 18px 0 46px rgba(8, 33, 34, .26) !important;
+  }
+
+  .sidebar.open {
+    left: 0 !important;
+    transform: translateX(0) !important;
+  }
+
+  .mobile-only {
+    display: grid !important;
+  }
+
+  .topbar {
+    height: auto !important;
+    min-height: 82px !important;
+    padding: 16px 0 12px !important;
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .topbar-left {
+    width: 100% !important;
+    min-width: 0 !important;
+    align-items: flex-start !important;
+  }
+
+  .topbar-left > div {
+    min-width: 0 !important;
+  }
+
+  .topbar-brand {
+    line-height: 1.45 !important;
+    letter-spacing: .12em !important;
+  }
+
+  .topbar-divider {
+    display: none !important;
+  }
+
+  .topbar h1,
+  body.large-text-mode .topbar h1 {
+    font-size: clamp(24px, 7vw, 36px) !important;
+    line-height: 1.08 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .top-actions {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 9px !important;
+  }
+
+  .api-pill {
+    display: inline-flex !important;
+    max-width: 100% !important;
+  }
+
+  .safety-banner {
+    margin-bottom: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  .hero-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 24px !important;
+    border-radius: 24px !important;
+    gap: 20px !important;
+  }
+
+  .hero-card h2,
+  body.large-text-mode .hero-card h2 {
+    font-size: clamp(28px, 8vw, 40px) !important;
+    line-height: 1.08 !important;
+  }
+
+  .hero-card p {
+    max-width: 100% !important;
+  }
+
+  .hero-actions {
+    flex-wrap: wrap !important;
+  }
+
+  .health-score-wrap {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    text-align: left !important;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .two-col,
+  .three-col,
+  .monitor-grid,
+  .med-summary-grid,
+  .care-grid,
+  .assistant-layout,
+  .logic-grid,
+  .settings-two-col,
+  .settings-info-grid,
+  .community-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .section-intro {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .section-intro .button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .card,
+  .metric-card,
+  .mini-card,
+  .service-card {
+    min-width: 0 !important;
+  }
+
+  .card-head {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .wearable-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .wearable-status {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  .wearable-status > div {
+    min-width: 0 !important;
+  }
+
+  .chart-wrap {
+    height: 260px !important;
+    min-width: 0 !important;
+  }
+
+  .table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table {
+    min-width: 640px !important;
+  }
+
+  .pathway {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pathway b {
+    display: none !important;
+  }
+
+  .assistant-layout .context-card {
+    order: -1 !important;
+  }
+
+  .chat-messages {
+    height: min(440px, 54vh) !important;
+  }
+
+  .api-input-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .password-wrap {
+    width: 100% !important;
+  }
+
+  .modal {
+    width: min(520px, calc(100vw - 28px)) !important;
+    border-radius: 20px !important;
+  }
+
+  .toast {
+    left: 14px !important;
+    right: 14px !important;
+    bottom: 14px !important;
+    max-width: none !important;
+  }
+
+  .code-line {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 0 14px 30px !important;
+  }
+
+  .topbar {
+    min-height: 78px !important;
+  }
+
+  .top-actions .avatar {
+    display: none !important;
+  }
+
+  .api-pill {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #apiStatusText {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .hero-card {
+    padding: 22px !important;
+  }
+
+  .hero-actions,
+  .display-mode-actions,
+  .modal-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .hero-actions .button,
+  .display-mode-actions .button,
+  .modal-actions .button,
+  .api-input-row .button,
+  .top-actions .button {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .metric-value {
+    font-size: 26px !important;
+  }
+
+  .current-bp,
+  body.large-text-mode .current-bp {
+    font-size: clamp(34px, 12vw, 48px) !important;
+  }
+
+  .big-number,
+  body.large-text-mode .big-number {
+    font-size: clamp(34px, 12vw, 48px) !important;
+  }
+
+  .week-strip {
+    grid-template-columns: repeat(7, minmax(34px, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  .day-pill {
+    padding: 8px 2px !important;
+  }
+
+  .day-pill strong {
+    font-size: 9px !important;
+  }
+
+  .med-card {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+  }
+
+  .med-actions {
+    grid-column: 1 / -1 !important;
+    justify-content: stretch !important;
+    flex-wrap: wrap !important;
+  }
+
+  .med-actions .button,
+  .med-actions .text-button {
+    flex: 1 1 120px !important;
+  }
+
+  .caregiver-card {
+    align-items: flex-start !important;
+  }
+
+  .alert-demo {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+  }
+
+  .alert-demo .button {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  .display-mode-preview,
+  .brand-preview {
+    align-items: flex-start !important;
+  }
+
+  .qa-list summary {
+    align-items: flex-start !important;
+  }
+
+  body.large-text-mode h1,
+  body.large-text-mode .topbar h1 {
+    font-size: clamp(28px, 9vw, 40px) !important;
+  }
+
+  body.large-text-mode h2,
+  body.large-text-mode .section-intro h2 {
+    font-size: clamp(24px, 8vw, 34px) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .main {
+    padding: 0 10px 26px !important;
+  }
+
+  .card,
+  .metric-card,
+  .mini-card,
+  .service-card {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .topbar-brand {
+    font-size: 9px !important;
+  }
+
+  .score-ring {
+    width: 96px !important;
+    height: 96px !important;
+    font-size: 27px !important;
+  }
+
+  .device-icon {
+    width: 46px !important;
+    height: 46px !important;
+    flex-basis: 46px !important;
+  }
+
+  .wearable-status .button {
+    width: 100% !important;
+  }
+
+  table {
+    min-width: 600px !important;
+  }
+}
