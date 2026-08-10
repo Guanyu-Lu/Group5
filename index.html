@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=privacy-7" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=watch-9" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=privacy-7" />
+  <link rel="stylesheet" href="styles.css?v=watch-9" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=privacy-7" defer></script>
+  <script src="app.js?v=watch-9" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=privacy-7" alt="" />
+          <img src="carelink-logo.png?v=watch-9" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -106,7 +106,13 @@
 
         <article class="card wearable-card" id="wearableCard">
           <div><p class="eyebrow">CONNECTED HEALTH</p><h3>Bring wearable data into the journey</h3><p>Simulate a smartwatch connection to demonstrate automatic home monitoring without requiring a real device integration.</p></div>
-          <div class="wearable-status"><span class="device-icon">⌚</span><div><strong id="wearableName">No device connected</strong><span id="wearableStatus">Manual readings only</span></div><button class="button secondary small" id="wearableInlineBtn">Connect</button></div>
+          <div class="wearable-status"><span class="device-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M9 3.5h6l.8 3.4a5.9 5.9 0 0 1 0 10.2L15 20.5H9l-.8-3.4a5.9 5.9 0 0 1 0-10.2L9 3.5Z"/>
+                <rect x="7.5" y="6.5" width="9" height="11" rx="3"/>
+                <path d="M10 10.4h4M10 13.2h3"/>
+              </svg>
+            </span><div><strong id="wearableName">No device connected</strong><span id="wearableStatus">Manual readings only</span></div><button class="button secondary small" id="wearableInlineBtn">Connect</button></div>
         </article>
       </section>
 
