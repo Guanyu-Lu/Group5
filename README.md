@@ -4,6 +4,8 @@ Static GitHub Pages prototype for the **Healthcare Beyond Hospitals** design cha
 
 CareLink SG demonstrates how an AI-enabled digital solution can support home-based health monitoring, preventive care, medication adherence, caregiver connection, and community healthcare handoff.
 
+ **Live Demo:**[Click here to experience our Platform](https://guanyu-lu.github.io/Group5/)
+
 ## Supported Features
 
 ### 1. Dashboard
