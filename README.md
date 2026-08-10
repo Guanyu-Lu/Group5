@@ -58,3 +58,8 @@ Then open `http://localhost:8000`.
 ## Prototype safety / scope
 
 CareLink SG is for classroom demonstration only. It does not diagnose conditions, prescribe treatment, or replace qualified healthcare professionals. Community services shown in the interface are labelled as demo services and are not connected to real providers.
+
+
+## Logo
+
+This version uses one root-level `carelink-logo.png`. Keep it in the same folder as `index.html` when deploying to GitHub Pages.

@@ -27,16 +27,12 @@ body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, B
 button, input, textarea { font: inherit; }
 button { cursor: pointer; }
 
-.app-shell { min-height: 100vh; display: grid; grid-template-columns: 260px 1fr; }
-.sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 24px 18px; background: linear-gradient(180deg,#123f40 0%,#103738 100%); color: #fff; z-index: 50; }
-.brand { display:flex; align-items:center; gap:12px; padding:2px 4px 27px; min-width:0; }
-.brand-mark { width:50px; height:50px; flex:0 0 50px; display:grid; place-items:center; padding:6px; border-radius:16px; background:linear-gradient(145deg,#ffffff 0%,#edf8f6 100%); border:1px solid rgba(255,255,255,.75); box-shadow:0 8px 22px rgba(3,29,31,.24), 0 2px 6px rgba(3,29,31,.12), inset 0 1px 0 rgba(255,255,255,.9); overflow:hidden; }
-.brand-mark img { width:100%; height:100%; object-fit:contain; display:block; filter:drop-shadow(0 2px 4px rgba(23,81,88,.16)); }
-.brand-copy { min-width:0; flex:1; overflow:hidden; }
-.brand-name { display:flex; align-items:baseline; gap:5px; line-height:1.05; letter-spacing:-.03em; white-space:nowrap; overflow:hidden; }
-.brand-name .brand-care { color:#f7ffff; font-size:18px; font-weight:820; }
-.brand-name .brand-sg { color:#70e3c7; font-size:12px; font-weight:900; letter-spacing:.04em; }
-.brand-tagline { display:block; color:#a9c6c5; font-size:9px; margin-top:6px; letter-spacing:.012em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: 248px 1fr; }
+.sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 24px 18px; background: #113c3d; color: #fff; z-index: 50; }
+.brand { display: flex; align-items: center; gap: 12px; padding: 2px 7px 26px; }
+.brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: linear-gradient(135deg, #63c6b7, #d0f0e9); color: #0a4f4a; font-weight: 900; font-size: 24px; }
+.brand strong { display:block; font-size: 17px; }
+.brand span { display:block; color: #a9c6c5; font-size: 11px; margin-top: 2px; }
 .nav { display: grid; gap: 6px; }
 .nav-item { width: 100%; border: 0; background: transparent; color: #bad0cf; text-align: left; padding: 12px 13px; border-radius: 12px; display:flex; align-items:center; gap: 11px; transition: .18s ease; }
 .nav-item span { width: 20px; text-align:center; font-size: 16px; }
@@ -51,13 +47,7 @@ button { cursor: pointer; }
 .main { min-width: 0; padding: 0 32px 48px; }
 .topbar { height: 88px; display:flex; align-items:center; justify-content:space-between; gap:18px; }
 .topbar-left { display:flex; align-items:center; gap:12px; }
-.topbar h1 { margin:3px 0 0; font-size: 25px; letter-spacing:-.025em; }
-.topbar-brand { display:flex; align-items:center; gap:7px; }
-.topbar-wordmark { color:#355b5e; letter-spacing:-.015em; font-size:10px; font-weight:850; text-transform:none; }
-.topbar-wordmark b { color:var(--primary); font-weight:900; }
-.topbar-divider { color:#9cb1b3; font-size:8px; }
-.inline-brand { font-weight:820; color:#214f52; letter-spacing:-.015em; }
-.inline-brand b { color:var(--primary); }
+.topbar h1 { margin:2px 0 0; font-size: 25px; }
 .top-actions { display:flex; align-items:center; gap:10px; }
 .avatar { width:38px; height:38px; border-radius:50%; display:grid; place-items:center; background:#d9e9e7; color:#185a55; font-weight:800; font-size:12px; }
 .eyebrow { margin:0; color: var(--primary); font-size: 10px; letter-spacing: .12em; font-weight: 800; }
@@ -332,22 +322,214 @@ td { padding:12px 10px; border-bottom:1px solid #eef3f3; white-space:nowrap; }
   .alert-demo .button{grid-column:1/-1}
   .week-strip{gap:4px}
   .day-pill{padding:9px 2px}
-  .brand-preview{align-items:flex-start;gap:14px;padding:15px}
-  .brand-preview-mark{width:64px;height:64px;flex-basis:64px;border-radius:19px}
-  .brand-preview-name span{font-size:23px}
-  .brand-preview-name b{font-size:15px}
 }
 
 
-.settings-two-col { align-items: stretch; }
-.brand-identity-card { overflow:hidden; position:relative; }
-.brand-identity-card:after { content:""; position:absolute; width:150px; height:150px; border-radius:50%; background:radial-gradient(circle,rgba(66,190,164,.12),transparent 70%); right:-45px; top:-50px; pointer-events:none; }
-.brand-preview { display:flex; align-items:center; gap:18px; margin-top:18px; padding:18px; border:1px solid #dfeaea; border-radius:18px; background:linear-gradient(135deg,#f9fcfc,#eef8f6); position:relative; z-index:1; }
-.brand-preview-mark { width:76px; height:76px; flex:0 0 76px; display:grid; place-items:center; padding:9px; border-radius:22px; background:#fff; border:1px solid #dcebea; box-shadow:0 12px 28px rgba(33,92,91,.12); }
-.brand-preview-mark img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 4px 7px rgba(18,83,92,.12)); }
-.brand-preview-name { display:flex; align-items:baseline; gap:7px; letter-spacing:-.04em; line-height:1; }
-.brand-preview-name span { color:#173238; font-size:27px; font-weight:850; }
-.brand-preview-name b { color:var(--primary); font-size:17px; font-weight:900; letter-spacing:.02em; }
-.brand-preview p { margin:7px 0 0; color:var(--muted); font-size:11px; }
-.brand-note { margin:14px 0 0; color:var(--muted); font-size:11px; line-height:1.55; }
+/* ===== CareLink SG fixed brand/logo patch v4 =====
+   Hard overrides for the single product logo and unified brand styling. */
+.app-shell {
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+}
 
+.sidebar {
+  width: 260px !important;
+  min-width: 260px !important;
+  overflow-x: hidden !important;
+}
+
+.brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+  padding: 8px 6px 28px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.brand-mark {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  max-width: 58px !important;
+  min-height: 58px !important;
+  max-height: 58px !important;
+  flex: 0 0 58px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 6px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(216,244,239,.86)) !important;
+  border: 1px solid rgba(255,255,255,.36) !important;
+  box-shadow: 0 18px 34px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.75) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+
+.brand-mark img,
+.brand-mark > img,
+.brand img[src*="carelink-logo"] {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  filter: drop-shadow(0 7px 10px rgba(20,55,70,.20)) !important;
+}
+
+.brand-copy {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  display: grid !important;
+  gap: 3px !important;
+}
+
+.brand-name {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 5px !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  line-height: 1.05 !important;
+  font-size: 19px !important;
+  font-weight: 850 !important;
+  letter-spacing: -.03em !important;
+  color: #ffffff !important;
+}
+
+.brand-name .brand-care,
+.brand-name .brand-sg,
+.brand .brand-name span,
+.brand strong.brand-name span {
+  display: inline !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+.brand-name .brand-care {
+  color: #ffffff !important;
+}
+
+.brand-name .brand-sg {
+  color: #89e6d5 !important;
+  letter-spacing: .01em !important;
+}
+
+.brand-tagline,
+.brand .brand-tagline {
+  display: block !important;
+  color: #a9c6c5 !important;
+  font-size: 11.5px !important;
+  line-height: 1.28 !important;
+  max-width: 165px !important;
+  margin-top: 2px !important;
+  font-weight: 600 !important;
+}
+
+.topbar-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  letter-spacing: .18em !important;
+}
+
+.topbar-wordmark {
+  display: inline-flex !important;
+  gap: 4px !important;
+  align-items: baseline !important;
+  white-space: nowrap !important;
+  letter-spacing: .14em !important;
+  color: #24746e !important;
+}
+
+.topbar-wordmark b,
+.inline-brand b {
+  color: #167c73 !important;
+}
+
+.brand-preview {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 18px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(135deg, #f8fbfb, #eef9f6) !important;
+  overflow: hidden !important;
+}
+
+.brand-preview-mark {
+  width: 72px !important;
+  height: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  border-radius: 22px !important;
+  padding: 8px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+  border: 1px solid #dcebea !important;
+  box-shadow: 0 14px 28px rgba(24, 66, 69, .10) !important;
+}
+
+.brand-preview-mark img,
+.brand-preview-mark > img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+  margin: 0 !important;
+  position: static !important;
+  transform: none !important;
+}
+
+/* Hard cap for the logo anywhere in this prototype. */
+img[src^="carelink-logo.png"] {
+  display: block !important;
+  max-width: 88px !important;
+  max-height: 88px !important;
+  object-fit: contain !important;
+}
+
+.sidebar,
+.brand,
+.nav {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+@media (max-width: 880px) {
+  .app-shell {
+    grid-template-columns: 1fr !important;
+  }
+  .sidebar {
+    left: -280px !important;
+    width: 260px !important;
+    min-width: 260px !important;
+  }
+  .sidebar.open {
+    left: 0 !important;
+  }
+  .brand-mark {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+    flex-basis: 54px !important;
+  }
+}
