@@ -1,8 +1,8 @@
-# CareLink SG — v7 Settings Info Update
+# CareLink SG — v8 Settings Info Update
 
 Static GitHub Pages prototype for the Healthcare Beyond Hospitals design challenge.
 
-## v7 update
+## v8 update
 
 - Added Settings page About section.
 - Added Q&A section for presentation/demo explanation.
