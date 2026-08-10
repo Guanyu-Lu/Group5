@@ -140,10 +140,11 @@ button { cursor: pointer; }
   line-height: 1;
 }
 .device-icon svg {
-  width: 27px;
-  height: 27px;
+  width: 30px;
+  height: 30px;
   display: block;
   margin: auto;
+  transform: translateY(2px);
   fill: none;
   stroke: var(--primary);
   stroke-width: 1.9;
