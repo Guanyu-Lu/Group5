@@ -5,75 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=auth-single-role-14" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=mobile-responsive-13" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=auth-single-role-14" />
+  <link rel="stylesheet" href="styles.css?v=mobile-responsive-13" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=auth-single-role-14" defer></script>
+  <script src="app.js?v=mobile-responsive-13" defer></script>
 </head>
-<body class="auth-required">
-
-  <section class="auth-screen" id="authScreen" aria-label="CareLink SG authentication">
-    <div class="auth-card">
-      <div class="auth-brand">
-        <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=auth-single-role-14" alt="" />
-        </div>
-        <div>
-          <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
-          <span class="brand-tagline">Single-role health companion</span>
-        </div>
-      </div>
-
-      <div class="auth-copy">
-        <p class="eyebrow">SECURE DEMO ACCESS</p>
-        <h1>Welcome, David Tan</h1>
-        <p>Login or register to enter the CareLink SG prototype. This classroom demo supports one user role only: <strong>Home health user</strong>.</p>
-      </div>
-
-      <div class="auth-role-pill">
-        <span>Current role</span>
-        <strong>Home health user</strong>
-      </div>
-
-      <div class="auth-tabs" role="tablist" aria-label="Authentication options">
-        <button class="auth-tab active" type="button" data-auth-tab="login" role="tab" aria-selected="true">Login</button>
-        <button class="auth-tab" type="button" data-auth-tab="register" role="tab" aria-selected="false">Register</button>
-      </div>
-
-      <form class="auth-panel active" id="loginForm" data-auth-panel="login">
-        <label>Email
-          <input type="email" id="loginEmail" value="david.tan@example.com" autocomplete="email" required />
-        </label>
-        <label>Password
-          <input type="password" id="loginPassword" placeholder="Enter any demo password" autocomplete="current-password" required />
-        </label>
-        <button class="button primary full" type="submit">Login</button>
-        <p class="auth-hint">Static prototype only. Login state is stored locally in this browser.</p>
-      </form>
-
-      <form class="auth-panel" id="registerForm" data-auth-panel="register" hidden>
-        <label>Full name
-          <input type="text" id="registerName" value="David Tan" autocomplete="name" required />
-        </label>
-        <label>Email
-          <input type="email" id="registerEmail" value="david.tan@example.com" autocomplete="email" required />
-        </label>
-        <label>Password
-          <input type="password" id="registerPassword" placeholder="Create a demo password" autocomplete="new-password" required />
-        </label>
-        <button class="button primary full" type="submit">Create demo account</button>
-        <p class="auth-hint">Registration creates the same single role: Home health user. No admin, doctor, or caregiver login is included.</p>
-      </form>
-    </div>
-  </section>
-
-  <div class="app-shell" id="appShell">
+<body>
+  <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=auth-single-role-14" alt="" />
+          <img src="carelink-logo.png?v=mobile-responsive-13" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -112,8 +56,7 @@
         <div class="top-actions">
           <div class="api-pill disconnected" id="apiPill"><span class="dot"></span><span id="apiStatusText">Gemini disconnected</span></div>
           <button class="button secondary small" id="apiTopBtn">Connect API</button>
-          <div class="avatar" id="profileAvatar" title="Demo profile">DT</div>
-          <button class="button secondary small logout-button" id="logoutBtn" type="button">Log out</button>
+          <div class="avatar" title="Demo profile">AT</div>
         </div>
       </header>
 
@@ -125,7 +68,7 @@
         <div class="hero-card">
           <div>
             <span class="status-chip green">● Daily check-in ready</span>
-            <h2 id="userGreeting">Good afternoon, David.</h2>
+            <h2>Good afternoon, Alex.</h2>
             <p>Your home health snapshot is ready. Review trends, medication, and AI-supported insights in one place.</p>
             <div class="hero-actions">
               <button class="button primary" data-go="monitoring">Add health reading</button>
@@ -303,7 +246,7 @@
               <button>How active was I this week?</button>
             </div>
             <div class="chat-messages" id="chatMessages">
-              <div class="message ai"><span class="message-avatar">✦</span><div><strong>CareLink SG AI</strong><p>Hi David. I can explain the demo health data in this prototype. Connect a Gemini API key to start.</p></div></div>
+              <div class="message ai"><span class="message-avatar">✦</span><div><strong>CareLink SG AI</strong><p>Hi Alex. I can explain the demo health data in this prototype. Connect a Gemini API key to start.</p></div></div>
             </div>
             <form class="chat-input" id="chatForm"><textarea id="chatInput" rows="1" placeholder="Ask about the health data in this demo…"></textarea><button class="button primary" type="submit">Send</button></form>
             <div class="ai-disclaimer">For educational prototype use only. Do not rely on the assistant for diagnosis, emergencies, or treatment decisions.</div>
@@ -373,7 +316,7 @@
             <p>This classroom prototype is designed to minimise data exposure. Demo health readings, medications, caregiver names, and display preferences stay in this browser unless an AI feature is used.</p>
             <ul class="privacy-list">
               <li>Gemini API key is stored only in <code>sessionStorage</code> and can be removed with <strong>Clear / Disconnect</strong>.</li>
-              <li>Prototype data, login/register state, and the single-role demo profile are stored locally in the browser through <code>localStorage</code>.</li>
+              <li>Prototype data is stored locally in the browser through <code>localStorage</code>.</li>
               <li>When AI analysis or chat is used, only the displayed demo snapshot and user message are sent to Gemini.</li>
               <li>This is not a production medical system and does not replace professional healthcare advice.</li>
             </ul>

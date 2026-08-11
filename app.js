@@ -33,13 +33,6 @@ const DEFAULT_CAREGIVERS = [
   { id: 2, name: 'Community Care Team', relation: 'Care coordinator', initials: 'CC', alerts: true }
 ];
 
-const DEFAULT_PROFILE = {
-  name: 'David Tan',
-  email: 'david.tan@example.com',
-  role: 'Home health user',
-  initials: 'DT'
-};
-
 const DEFAULT_WEEK = [
   { day: 'Mon', state: 'done' }, { day: 'Tue', state: 'done' }, { day: 'Wed', state: 'done' },
   { day: 'Thu', state: 'missed' }, { day: 'Fri', state: 'done' }, { day: 'Sat', state: 'done' }, { day: 'Sun', state: 'done' }
@@ -52,9 +45,7 @@ const STORE = {
   week: 'carelink_week',
   sharing: 'carelink_sharing',
   wearable: 'carelink_wearable',
-  largeText: 'carelink_large_text',
-  auth: 'carelink_auth',
-  profile: 'carelink_profile'
+  largeText: 'carelink_large_text'
 };
 
 let bpChart = null;
@@ -73,90 +64,6 @@ function getMeds() { return getJSON(STORE.meds, DEFAULT_MEDS); }
 function getCaregivers() { return getJSON(STORE.caregivers, DEFAULT_CAREGIVERS); }
 function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
-
-function getProfile() { return getJSON(STORE.profile, DEFAULT_PROFILE); }
-function initialsFromName(name='David Tan') {
-  const words = String(name).trim().split(/\s+/).filter(Boolean);
-  return ((words[0]?.[0] || 'D') + (words[1]?.[0] || 'T')).toUpperCase();
-}
-function normaliseProfile(input={}) {
-  const name = String(input.name || DEFAULT_PROFILE.name).trim() || DEFAULT_PROFILE.name;
-  const email = String(input.email || DEFAULT_PROFILE.email).trim() || DEFAULT_PROFILE.email;
-  return { name, email, role: DEFAULT_PROFILE.role, initials: initialsFromName(name) };
-}
-function isSignedIn() { return localStorage.getItem(STORE.auth) === 'true'; }
-function syncProfileUI() {
-  const p = getProfile();
-  const firstName = p.name.split(/\s+/)[0] || 'David';
-  if ($('userGreeting')) $('userGreeting').textContent = `Good afternoon, ${firstName}.`;
-  if ($('profileAvatar')) {
-    $('profileAvatar').textContent = p.initials || initialsFromName(p.name);
-    $('profileAvatar').setAttribute('title', `${p.name} · ${p.role}`);
-  }
-  const loginEmail = $('loginEmail');
-  const registerEmail = $('registerEmail');
-  const registerName = $('registerName');
-  if (loginEmail && !loginEmail.dataset.touched) loginEmail.value = p.email;
-  if (registerEmail && !registerEmail.dataset.touched) registerEmail.value = p.email;
-  if (registerName && !registerName.dataset.touched) registerName.value = p.name;
-}
-function syncAuthUI() {
-  const locked = !isSignedIn();
-  document.body.classList.toggle('auth-required', locked);
-  if ($('authScreen')) $('authScreen').hidden = !locked;
-  if ($('appShell')) $('appShell').setAttribute('aria-hidden', locked ? 'true' : 'false');
-}
-function signIn(profileInput) {
-  setJSON(STORE.profile, normaliseProfile(profileInput || getProfile()));
-  localStorage.setItem(STORE.auth, 'true');
-  syncProfileUI();
-  syncAuthUI();
-  renderAll();
-  toast(`Welcome, ${getProfile().name}.`);
-}
-function signOut() {
-  localStorage.setItem(STORE.auth, 'false');
-  syncAuthUI();
-  toast('Signed out from the demo account.');
-}
-function setAuthTab(tab) {
-  $$('.auth-tab').forEach(btn => {
-    const active = btn.dataset.authTab === tab;
-    btn.classList.toggle('active', active);
-    btn.setAttribute('aria-selected', String(active));
-  });
-  $$('[data-auth-panel]').forEach(panel => {
-    const active = panel.dataset.authPanel === tab;
-    panel.classList.toggle('active', active);
-    panel.hidden = !active;
-  });
-}
-function bindAuthHandlers() {
-  $$('.auth-tab').forEach(btn => btn.addEventListener('click', () => setAuthTab(btn.dataset.authTab)));
-  ['loginEmail','registerEmail','registerName'].forEach(id => {
-    const el = $(id);
-    if (el) el.addEventListener('input', () => { el.dataset.touched = 'true'; });
-  });
-  if ($('loginForm')) $('loginForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const email = $('loginEmail').value.trim();
-    const password = $('loginPassword').value.trim();
-    if (!email || !password) { toast('Enter an email and password to continue.'); return; }
-    const p = getProfile();
-    signIn({ ...p, email });
-    $('loginPassword').value = '';
-  });
-  if ($('registerForm')) $('registerForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name = $('registerName').value.trim() || DEFAULT_PROFILE.name;
-    const email = $('registerEmail').value.trim() || DEFAULT_PROFILE.email;
-    const password = $('registerPassword').value.trim();
-    if (!password) { toast('Create a demo password to continue.'); return; }
-    signIn({ name, email });
-    $('registerPassword').value = '';
-  });
-  if ($('logoutBtn')) $('logoutBtn').addEventListener('click', signOut);
-}
 
 function isLargeTextMode() { return localStorage.getItem(STORE.largeText) === 'true'; }
 function syncLargeTextUI() {
@@ -445,8 +352,7 @@ function addChatMessage(role,text,loading=false){
     : role === 'ai'
       ? `<div class="message-markdown markdown-body compact">${markdownToHtml(text)}</div>`
       : `<p>${esc(text)}</p>`;
-  const p = getProfile();
-  wrap.innerHTML=`<span class="message-avatar">${role==='user'?(p.initials || 'DT'):'✦'}</span><div><strong>${role==='user'?esc(p.name):'CareLink AI'}</strong>${body}</div>`;
+  wrap.innerHTML=`<span class="message-avatar">${role==='user'?'AT':'✦'}</span><div><strong>${role==='user'?'Alex':'CareLink AI'}</strong>${body}</div>`;
   $('chatMessages').appendChild(wrap); $('chatMessages').scrollTop=$('chatMessages').scrollHeight; return wrap;
 }
 
@@ -495,7 +401,7 @@ function resetDemoData(){
 
 function demoBooking(service){ openModal(service,`<div class="insight-summary"><div class="insight-icon">✓</div><div><strong>Demo request created</strong><p>This prototype does not connect to a real healthcare provider. In a production system, this step would hand off to an approved provider workflow.</p></div></div><button class="button primary" id="closeDemoBooking">Done</button>`); $('closeDemoBooking').onclick=closeModal; }
 
-function renderAll(){ renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncProfileUI(); syncApiUI(); syncLargeTextUI(); }
+function renderAll(){ renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
 
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
@@ -505,11 +411,6 @@ function init(){
   if(!localStorage.getItem(STORE.sharing)) setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false});
   if(!localStorage.getItem(STORE.wearable)) localStorage.setItem(STORE.wearable,'false');
   if(!localStorage.getItem(STORE.largeText)) localStorage.setItem(STORE.largeText,'false');
-  if(!localStorage.getItem(STORE.profile)) setJSON(STORE.profile, DEFAULT_PROFILE);
-  if(!localStorage.getItem(STORE.auth)) localStorage.setItem(STORE.auth, 'false');
-  bindAuthHandlers();
-  syncProfileUI();
-  syncAuthUI();
   syncLargeTextUI();
   setDefaultReadingTime();
 
