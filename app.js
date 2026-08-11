@@ -47,6 +47,7 @@ const STORE = {
   wearable: 'carelink_wearable',
   largeText: 'carelink_large_text',
   profile: 'carelink_profile',
+  credentials: 'carelink_credentials',
   auth: 'carelink_auth'
 };
 
@@ -67,7 +68,8 @@ function getCaregivers() { return getJSON(STORE.caregivers, DEFAULT_CAREGIVERS);
 function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
 
-const DEFAULT_PROFILE = { name: 'David Tan', email: 'david.tan@example.com', initials: 'DT' };
+const DEFAULT_PROFILE = { name: 'David Tan', phone: '+65 9123 4567', initials: 'DT' };
+const DEFAULT_CREDENTIALS = { phone: '+65 9123 4567', password: 'carelink123' };
 
 function initialsFromName(name='David Tan') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -77,13 +79,30 @@ function initialsFromName(name='David Tan') {
 function getProfile() {
   const profile = getJSON(STORE.profile, DEFAULT_PROFILE);
   const name = profile?.name || DEFAULT_PROFILE.name;
-  return { name, email: profile?.email || DEFAULT_PROFILE.email, initials: initialsFromName(name) };
+  const phone = profile?.phone || profile?.email || DEFAULT_PROFILE.phone;
+  return { name, phone, initials: initialsFromName(name) };
 }
 
 function setProfile(profile) {
   const name = (profile?.name || DEFAULT_PROFILE.name).trim() || DEFAULT_PROFILE.name;
-  const email = (profile?.email || DEFAULT_PROFILE.email).trim() || DEFAULT_PROFILE.email;
-  setJSON(STORE.profile, { name, email, initials: initialsFromName(name) });
+  const phone = (profile?.phone || profile?.email || DEFAULT_PROFILE.phone).trim() || DEFAULT_PROFILE.phone;
+  setJSON(STORE.profile, { name, phone, initials: initialsFromName(name) });
+}
+
+function normalisePhone(value='') {
+  return String(value).replace(/[\s()-]/g, '');
+}
+
+function getCredentials() {
+  const saved = getJSON(STORE.credentials, DEFAULT_CREDENTIALS);
+  return {
+    phone: saved?.phone || DEFAULT_CREDENTIALS.phone,
+    password: saved?.password || DEFAULT_CREDENTIALS.password
+  };
+}
+
+function setCredentials(phone, password) {
+  setJSON(STORE.credentials, { phone, password });
 }
 
 function isAuthenticated() { return sessionStorage.getItem(STORE.auth) === 'true'; }
@@ -117,11 +136,21 @@ function showApp() {
 
 function loginDemo(e) {
   e.preventDefault();
-  const email = $('loginEmail').value.trim();
+  const phone = $('loginPhone').value.trim();
   const password = $('loginPassword').value.trim();
-  if (!email || !password) { toast('Enter email and password.'); return; }
+  if (!phone || !password) { toast('Enter phone number and password.'); return; }
+
+  const credentials = getCredentials();
+  const phoneMatches = normalisePhone(phone) === normalisePhone(credentials.phone);
+  const passwordMatches = password === credentials.password;
+
+  if (!phoneMatches || !passwordMatches) {
+    toast('Phone number or password is incorrect.');
+    return;
+  }
+
   const profile = getProfile();
-  setProfile({ ...profile, email });
+  setProfile({ ...profile, phone: credentials.phone });
   sessionStorage.setItem(STORE.auth, 'true');
   showApp();
   renderAll();
@@ -131,12 +160,13 @@ function loginDemo(e) {
 function registerDemo(e) {
   e.preventDefault();
   const name = $('registerName').value.trim() || DEFAULT_PROFILE.name;
-  const email = $('registerEmail').value.trim();
+  const phone = $('registerPhone').value.trim();
   const password = $('registerPassword').value;
   const confirm = $('registerConfirm').value;
-  if (!email || !password || !confirm) { toast('Complete the registration form.'); return; }
+  if (!phone || !password || !confirm) { toast('Complete the registration form.'); return; }
   if (password !== confirm) { toast('Passwords do not match.'); return; }
-  setProfile({ name, email });
+  setProfile({ name, phone });
+  setCredentials(phone, password);
   sessionStorage.setItem(STORE.auth, 'true');
   showApp();
   renderAll();
@@ -146,6 +176,7 @@ function registerDemo(e) {
 function logoutDemo() {
   sessionStorage.removeItem(STORE.auth);
   if ($('loginPassword')) $('loginPassword').value = '';
+  if ($('loginPhone')) $('loginPhone').value = '';
   setView('dashboard');
   showAuth('login');
 }
