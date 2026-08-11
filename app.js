@@ -29,7 +29,7 @@ const DEFAULT_MEDS = [
 ];
 
 const DEFAULT_CAREGIVERS = [
-  { id: 1, name: 'Emily Tan', relation: 'Daughter', initials: 'ET', alerts: true },
+  { id: 1, name: 'Rachel Tan', relation: 'Daughter', initials: 'RT', alerts: true },
   { id: 2, name: 'Community Care Team', relation: 'Care coordinator', initials: 'CC', alerts: true }
 ];
 
@@ -76,7 +76,19 @@ function getJSON(key, fallback) {
 function setJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 function getReadings() { return getJSON(STORE.readings, DEFAULT_READINGS); }
 function getMeds() { return getJSON(STORE.meds, DEFAULT_MEDS); }
-function getCaregivers() { return getJSON(STORE.caregivers, DEFAULT_CAREGIVERS); }
+function getCaregivers() {
+  const caregivers = getJSON(STORE.caregivers, DEFAULT_CAREGIVERS);
+  let changed = false;
+  const updated = caregivers.map(person => {
+    if (person.name === 'Emily Tan' || (person.relation === 'Daughter' && person.initials === 'ET')) {
+      changed = true;
+      return { ...person, name: 'Rachel Tan', initials: 'RT' };
+    }
+    return person;
+  });
+  if (changed) setJSON(STORE.caregivers, updated);
+  return updated;
+}
 function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
 
@@ -723,7 +735,7 @@ function startEmergencyHold(event) {
   clearInterval(emergencyProgressTimer);
   emergencyHoldStarted = Date.now();
   btn.classList.add('holding');
-  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Keep holding to call Emily Tan...';
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Keep holding to call Rachel Tan...';
   emergencyProgressTimer = setInterval(() => {
     const elapsed = Date.now() - emergencyHoldStarted;
     progress.style.width = `${Math.min(100, elapsed / 3000 * 100)}%`;
@@ -748,9 +760,9 @@ function triggerEmergencyContact() {
     btn.classList.remove('holding');
     btn.classList.add('activated');
   }
-  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Emergency contact call activated: Emily Tan.';
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Emergency contact call activated: Rachel Tan.';
   toast('Emergency contact call activated in this demo.');
-  openModal('Emergency contact', `<div class="insight-summary"><div class="insight-icon">!</div><div><strong>Calling Emily Tan</strong><p>This classroom prototype has activated the emergency contact flow. A production version would connect to the approved local calling or emergency workflow.</p></div></div><div class="modal-actions"><button class="button secondary" id="resetEmergencyDemo">Reset demo call</button><button class="button primary" id="closeEmergencyModal">Done</button></div>`);
+  openModal('Emergency contact', `<div class="insight-summary"><div class="insight-icon">!</div><div><strong>Calling Rachel Tan</strong><p>This classroom prototype has activated the emergency contact flow. A production version would connect to the approved local calling or emergency workflow.</p></div></div><div class="modal-actions"><button class="button secondary" id="resetEmergencyDemo">Reset demo call</button><button class="button primary" id="closeEmergencyModal">Done</button></div>`);
   $('resetEmergencyDemo').onclick = () => { if (btn) btn.classList.remove('activated'); closeModal(); resetEmergencyHold(); };
   $('closeEmergencyModal').onclick = closeModal;
 }
