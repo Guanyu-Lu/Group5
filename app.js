@@ -45,7 +45,9 @@ const STORE = {
   week: 'carelink_week',
   sharing: 'carelink_sharing',
   wearable: 'carelink_wearable',
-  largeText: 'carelink_large_text'
+  largeText: 'carelink_large_text',
+  profile: 'carelink_profile',
+  auth: 'carelink_auth'
 };
 
 let bpChart = null;
@@ -64,6 +66,89 @@ function getMeds() { return getJSON(STORE.meds, DEFAULT_MEDS); }
 function getCaregivers() { return getJSON(STORE.caregivers, DEFAULT_CAREGIVERS); }
 function getWeek() { return getJSON(STORE.week, DEFAULT_WEEK); }
 function apiKey() { return sessionStorage.getItem('carelink_gemini_key') || ''; }
+
+const DEFAULT_PROFILE = { name: 'David Tan', email: 'david.tan@example.com', initials: 'DT' };
+
+function initialsFromName(name='David Tan') {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] || 'D') + (parts[1]?.[0] || 'T')).toUpperCase();
+}
+
+function getProfile() {
+  const profile = getJSON(STORE.profile, DEFAULT_PROFILE);
+  const name = profile?.name || DEFAULT_PROFILE.name;
+  return { name, email: profile?.email || DEFAULT_PROFILE.email, initials: initialsFromName(name) };
+}
+
+function setProfile(profile) {
+  const name = (profile?.name || DEFAULT_PROFILE.name).trim() || DEFAULT_PROFILE.name;
+  const email = (profile?.email || DEFAULT_PROFILE.email).trim() || DEFAULT_PROFILE.email;
+  setJSON(STORE.profile, { name, email, initials: initialsFromName(name) });
+}
+
+function isAuthenticated() { return sessionStorage.getItem(STORE.auth) === 'true'; }
+
+function updateProfileUI() {
+  const profile = getProfile();
+  if ($('profileName')) $('profileName').textContent = profile.name;
+  if ($('profileAvatar')) $('profileAvatar').textContent = profile.initials;
+  if ($('heroGreeting')) $('heroGreeting').textContent = `Good afternoon, ${profile.name.split(/\s+/)[0] || 'David'}.`;
+}
+
+function setAuthMode(mode='login') {
+  const login = mode !== 'register';
+  if ($('loginTab')) $('loginTab').classList.toggle('active', login);
+  if ($('registerTab')) $('registerTab').classList.toggle('active', !login);
+  if ($('loginForm')) $('loginForm').classList.toggle('active', login);
+  if ($('registerForm')) $('registerForm').classList.toggle('active', !login);
+}
+
+function showAuth(mode='login') {
+  setAuthMode(mode);
+  if ($('authScreen')) $('authScreen').hidden = false;
+  if ($('appShell')) $('appShell').hidden = true;
+}
+
+function showApp() {
+  if ($('authScreen')) $('authScreen').hidden = true;
+  if ($('appShell')) $('appShell').hidden = false;
+  updateProfileUI();
+}
+
+function loginDemo(e) {
+  e.preventDefault();
+  const email = $('loginEmail').value.trim();
+  const password = $('loginPassword').value.trim();
+  if (!email || !password) { toast('Enter email and password.'); return; }
+  const profile = getProfile();
+  setProfile({ ...profile, email });
+  sessionStorage.setItem(STORE.auth, 'true');
+  showApp();
+  renderAll();
+  toast(`Logged in as ${getProfile().name}.`);
+}
+
+function registerDemo(e) {
+  e.preventDefault();
+  const name = $('registerName').value.trim() || DEFAULT_PROFILE.name;
+  const email = $('registerEmail').value.trim();
+  const password = $('registerPassword').value;
+  const confirm = $('registerConfirm').value;
+  if (!email || !password || !confirm) { toast('Complete the registration form.'); return; }
+  if (password !== confirm) { toast('Passwords do not match.'); return; }
+  setProfile({ name, email });
+  sessionStorage.setItem(STORE.auth, 'true');
+  showApp();
+  renderAll();
+  toast(`Registered and logged in as ${getProfile().name}.`);
+}
+
+function logoutDemo() {
+  sessionStorage.removeItem(STORE.auth);
+  if ($('loginPassword')) $('loginPassword').value = '';
+  setView('dashboard');
+  showAuth('login');
+}
 
 function isLargeTextMode() { return localStorage.getItem(STORE.largeText) === 'true'; }
 function syncLargeTextUI() {
@@ -352,7 +437,8 @@ function addChatMessage(role,text,loading=false){
     : role === 'ai'
       ? `<div class="message-markdown markdown-body compact">${markdownToHtml(text)}</div>`
       : `<p>${esc(text)}</p>`;
-  wrap.innerHTML=`<span class="message-avatar">${role==='user'?'AT':'✦'}</span><div><strong>${role==='user'?'Alex':'CareLink AI'}</strong>${body}</div>`;
+  const profile = getProfile();
+  wrap.innerHTML=`<span class="message-avatar">${role==='user'?profile.initials:'✦'}</span><div><strong>${role==='user'?profile.name:'CareLink AI'}</strong>${body}</div>`;
   $('chatMessages').appendChild(wrap); $('chatMessages').scrollTop=$('chatMessages').scrollHeight; return wrap;
 }
 
@@ -399,9 +485,77 @@ function resetDemoData(){
   setJSON(STORE.readings,DEFAULT_READINGS); setJSON(STORE.meds,DEFAULT_MEDS); setJSON(STORE.caregivers,DEFAULT_CAREGIVERS); setJSON(STORE.week,DEFAULT_WEEK); setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false}); localStorage.setItem(STORE.wearable,'false'); chatHistory=[]; renderAll(); toast('Demo data restored.');
 }
 
+
+let emergencyHoldTimer = null;
+let emergencyProgressTimer = null;
+let emergencyHoldStarted = 0;
+
+function resetEmergencyHold() {
+  clearTimeout(emergencyHoldTimer);
+  clearInterval(emergencyProgressTimer);
+  emergencyHoldTimer = null;
+  emergencyProgressTimer = null;
+  const btn = $('holdEmergencyBtn');
+  const progress = $('holdProgress');
+  if (btn) btn.classList.remove('holding');
+  if (progress) progress.style.width = '0%';
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Ready for long-press action.';
+}
+
+function startEmergencyHold(event) {
+  if (event) event.preventDefault();
+  const btn = $('holdEmergencyBtn');
+  const progress = $('holdProgress');
+  if (!btn || !progress || btn.classList.contains('activated')) return;
+  clearTimeout(emergencyHoldTimer);
+  clearInterval(emergencyProgressTimer);
+  emergencyHoldStarted = Date.now();
+  btn.classList.add('holding');
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Keep holding to call Emily Tan...';
+  emergencyProgressTimer = setInterval(() => {
+    const elapsed = Date.now() - emergencyHoldStarted;
+    progress.style.width = `${Math.min(100, elapsed / 3000 * 100)}%`;
+  }, 40);
+  emergencyHoldTimer = setTimeout(triggerEmergencyContact, 3000);
+}
+
+function cancelEmergencyHold(event) {
+  if (event) event.preventDefault();
+  const btn = $('holdEmergencyBtn');
+  if (btn && btn.classList.contains('activated')) return;
+  resetEmergencyHold();
+}
+
+function triggerEmergencyContact() {
+  clearTimeout(emergencyHoldTimer);
+  clearInterval(emergencyProgressTimer);
+  const btn = $('holdEmergencyBtn');
+  const progress = $('holdProgress');
+  if (progress) progress.style.width = '100%';
+  if (btn) {
+    btn.classList.remove('holding');
+    btn.classList.add('activated');
+  }
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = 'Emergency contact call activated: Emily Tan.';
+  toast('Emergency contact call activated in this demo.');
+  openModal('Emergency contact', `<div class="insight-summary"><div class="insight-icon">!</div><div><strong>Calling Emily Tan</strong><p>This classroom prototype has activated the emergency contact flow. A production version would connect to the approved local calling or emergency workflow.</p></div></div><div class="modal-actions"><button class="button secondary" id="resetEmergencyDemo">Reset demo call</button><button class="button primary" id="closeEmergencyModal">Done</button></div>`);
+  $('resetEmergencyDemo').onclick = () => { if (btn) btn.classList.remove('activated'); closeModal(); resetEmergencyHold(); };
+  $('closeEmergencyModal').onclick = closeModal;
+}
+
+function setupEmergencyHold() {
+  const btn = $('holdEmergencyBtn');
+  if (!btn) return;
+  btn.addEventListener('pointerdown', startEmergencyHold);
+  btn.addEventListener('pointerup', cancelEmergencyHold);
+  btn.addEventListener('pointerleave', cancelEmergencyHold);
+  btn.addEventListener('pointercancel', cancelEmergencyHold);
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+}
+
 function demoBooking(service){ openModal(service,`<div class="insight-summary"><div class="insight-icon">✓</div><div><strong>Demo request created</strong><p>This prototype does not connect to a real healthcare provider. In a production system, this step would hand off to an approved provider workflow.</p></div></div><button class="button primary" id="closeDemoBooking">Done</button>`); $('closeDemoBooking').onclick=closeModal; }
 
-function renderAll(){ renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
+function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
 
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
@@ -411,13 +565,20 @@ function init(){
   if(!localStorage.getItem(STORE.sharing)) setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false});
   if(!localStorage.getItem(STORE.wearable)) localStorage.setItem(STORE.wearable,'false');
   if(!localStorage.getItem(STORE.largeText)) localStorage.setItem(STORE.largeText,'false');
+  if(!localStorage.getItem(STORE.profile)) setProfile(DEFAULT_PROFILE);
   syncLargeTextUI();
   setDefaultReadingTime();
+
+  if ($('loginTab')) $('loginTab').onclick = () => setAuthMode('login');
+  if ($('registerTab')) $('registerTab').onclick = () => setAuthMode('register');
+  if ($('loginForm')) $('loginForm').addEventListener('submit', loginDemo);
+  if ($('registerForm')) $('registerForm').addEventListener('submit', registerDemo);
 
   $$('.nav-item').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
   $$('[data-go]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.go)));
   $('menuBtn').onclick=()=>$('sidebar').classList.toggle('open');
   $('apiTopBtn').onclick=()=>setView('settings');
+  if ($('logoutBtn')) $('logoutBtn').onclick=logoutDemo;
   $('healthForm').addEventListener('submit',addHealthReading);
   $('wearableBtn').onclick=toggleWearable; $('wearableInlineBtn').onclick=toggleWearable;
   $('dashboardAnalyzeBtn').onclick=()=>analyzeHealth('dashboard'); $('analyzeBtn').onclick=()=>analyzeHealth('insights');
@@ -437,9 +598,15 @@ function init(){
   $('toggleKeyBtn').onclick=()=>{const input=$('apiKeyInput');const show=input.type==='password';input.type=show?'text':'password';$('toggleKeyBtn').textContent=show?'Hide':'Show';};
   $('resetAllBtn').onclick=resetDemoData;
   if($('largeTextToggle')) $('largeTextToggle').onclick=toggleLargeTextMode;
+  setupEmergencyHold();
   $('modalClose').onclick=closeModal; $('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-  renderAll();
+  if (isAuthenticated()) {
+    showApp();
+    renderAll();
+  } else {
+    showAuth('login');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

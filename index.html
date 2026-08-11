@@ -5,19 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=mobile-responsive-13" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=auth-essential-14" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=mobile-responsive-13" />
+  <link rel="stylesheet" href="styles.css?v=auth-essential-14" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=mobile-responsive-13" defer></script>
+  <script src="app.js?v=auth-essential-14" defer></script>
 </head>
 <body>
-  <div class="app-shell">
+  <section class="auth-screen" id="authScreen" aria-label="Authentication">
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist" aria-label="Login or register">
+        <button class="auth-tab active" id="loginTab" type="button">Login</button>
+        <button class="auth-tab" id="registerTab" type="button">Register</button>
+      </div>
+
+      <form class="auth-form active" id="loginForm" autocomplete="on">
+        <label>Email<input type="email" id="loginEmail" autocomplete="email" required /></label>
+        <label>Password<input type="password" id="loginPassword" autocomplete="current-password" required /></label>
+        <button class="button primary" type="submit">Login</button>
+      </form>
+
+      <form class="auth-form" id="registerForm" autocomplete="on">
+        <label>Full name<input type="text" id="registerName" autocomplete="name" value="David Tan" required /></label>
+        <label>Email<input type="email" id="registerEmail" autocomplete="email" required /></label>
+        <label>Password<input type="password" id="registerPassword" autocomplete="new-password" required /></label>
+        <label>Confirm password<input type="password" id="registerConfirm" autocomplete="new-password" required /></label>
+        <button class="button primary" type="submit">Register</button>
+      </form>
+    </div>
+  </section>
+
+  <div class="app-shell" id="appShell" hidden>
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=mobile-responsive-13" alt="" />
+          <img src="carelink-logo.png?v=auth-essential-14" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -32,6 +55,7 @@
         <button class="nav-item" data-view="medication"><span>◉</span> Medication</button>
         <button class="nav-item" data-view="care"><span>♡</span> Care Network</button>
         <button class="nav-item" data-view="community"><span>⌖</span> Community Care</button>
+        <button class="nav-item" data-view="essential"><span>!</span> Essential</button>
         <button class="nav-item" data-view="assistant"><span>✧</span> AI Assistant</button>
         <button class="nav-item" data-view="settings"><span>⚙</span> Settings</button>
       </nav>
@@ -56,7 +80,8 @@
         <div class="top-actions">
           <div class="api-pill disconnected" id="apiPill"><span class="dot"></span><span id="apiStatusText">Gemini disconnected</span></div>
           <button class="button secondary small" id="apiTopBtn">Connect API</button>
-          <div class="avatar" title="Demo profile">AT</div>
+          <div class="profile-pill" title="Demo profile"><div class="avatar" id="profileAvatar">DT</div><span id="profileName">David Tan</span></div>
+          <button class="button danger-outline small logout-button" id="logoutBtn" type="button">Logout</button>
         </div>
       </header>
 
@@ -68,7 +93,7 @@
         <div class="hero-card">
           <div>
             <span class="status-chip green">● Daily check-in ready</span>
-            <h2>Good afternoon, Alex.</h2>
+            <h2 id="heroGreeting">Good afternoon, David.</h2>
             <p>Your home health snapshot is ready. Review trends, medication, and AI-supported insights in one place.</p>
             <div class="hero-actions">
               <button class="button primary" data-go="monitoring">Add health reading</button>
@@ -235,6 +260,47 @@
         <div class="urgent-note"><strong>Urgent situations:</strong> This prototype is not an emergency service. In a real product, emergency guidance should be designed with qualified clinical and local-service input.</div>
       </section>
 
+
+      <section class="view" id="view-essential">
+        <div class="section-intro"><div><p class="eyebrow">ESSENTIAL SUPPORT</p><h2>Essential</h2><p>Quick access for urgent caregiver support in this classroom prototype.</p></div></div>
+
+        <div class="essential-grid">
+          <article class="card emergency-card">
+            <div class="emergency-head">
+              <div class="emergency-icon" aria-hidden="true">!</div>
+              <div>
+                <p class="eyebrow">EMERGENCY CONTACT</p>
+                <h3>Hold to call emergency contact</h3>
+              </div>
+            </div>
+            <div class="emergency-contact-card">
+              <div class="care-avatar">ET</div>
+              <div>
+                <strong>Emily Tan</strong>
+                <span>Daughter · Primary emergency contact</span>
+              </div>
+            </div>
+            <button class="emergency-hold-button" id="holdEmergencyBtn" type="button" aria-describedby="emergencyHint">
+              <span class="hold-progress" id="holdProgress" aria-hidden="true"></span>
+              <span class="hold-button-content"><strong>Hold 3 seconds</strong><small>Call emergency contact</small></span>
+            </button>
+            <p class="subtle" id="emergencyHint">Press and hold the button for 3 seconds to activate the emergency contact call demo.</p>
+            <div class="emergency-status" id="emergencyStatus">Ready for long-press action.</div>
+          </article>
+
+          <article class="card essential-card">
+            <p class="eyebrow">CARE ESCALATION</p>
+            <h3>Suggested support pathway</h3>
+            <div class="essential-steps">
+              <div><span>1</span><strong>Contact caregiver</strong><small>Primary family support</small></div>
+              <div><span>2</span><strong>Share health summary</strong><small>Recent readings and medication status</small></div>
+              <div><span>3</span><strong>Seek professional help</strong><small>Use local emergency services for real emergencies</small></div>
+            </div>
+            <p class="urgent-note compact"><strong>Demo only:</strong> This page does not replace real emergency services or professional medical advice.</p>
+          </article>
+        </div>
+      </section>
+
       <section class="view" id="view-assistant">
         <div class="assistant-layout">
           <article class="card chat-card">
@@ -246,7 +312,7 @@
               <button>How active was I this week?</button>
             </div>
             <div class="chat-messages" id="chatMessages">
-              <div class="message ai"><span class="message-avatar">✦</span><div><strong>CareLink SG AI</strong><p>Hi Alex. I can explain the demo health data in this prototype. Connect a Gemini API key to start.</p></div></div>
+              <div class="message ai"><span class="message-avatar">✦</span><div><strong>CareLink SG AI</strong><p>Hi David. I can explain the demo health data in this prototype. Connect a Gemini API key to start.</p></div></div>
             </div>
             <form class="chat-input" id="chatForm"><textarea id="chatInput" rows="1" placeholder="Ask about the health data in this demo…"></textarea><button class="button primary" type="submit">Send</button></form>
             <div class="ai-disclaimer">For educational prototype use only. Do not rely on the assistant for diagnosis, emergencies, or treatment decisions.</div>
