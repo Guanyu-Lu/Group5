@@ -38,6 +38,17 @@ const DEFAULT_WEEK = [
   { day: 'Thu', state: 'missed' }, { day: 'Fri', state: 'done' }, { day: 'Sat', state: 'done' }, { day: 'Sun', state: 'done' }
 ];
 
+const DEFAULT_CHECKINS = [
+  {
+    id: 1001,
+    date: '2026-08-10T10:30',
+    concern: 'Feeling dizzy after breakfast and unsure whether to keep monitoring or contact support.',
+    outcome: 'Contact a healthcare professional',
+    level: 'amber',
+    confidence: 'Medium'
+  }
+];
+
 const STORE = {
   readings: 'carelink_readings',
   meds: 'carelink_meds',
@@ -48,7 +59,8 @@ const STORE = {
   largeText: 'carelink_large_text',
   profile: 'carelink_profile',
   credentials: 'carelink_credentials',
-  auth: 'carelink_auth'
+  auth: 'carelink_auth',
+  checkins: 'carelink_checkins'
 };
 
 let bpChart = null;
@@ -79,13 +91,13 @@ function initialsFromName(name='David Tan') {
 function getProfile() {
   const profile = getJSON(STORE.profile, DEFAULT_PROFILE);
   const name = profile?.name || DEFAULT_PROFILE.name;
-  const phone = profile?.phone || profile?.email || DEFAULT_PROFILE.phone;
+  const phone = profile?.phone || DEFAULT_PROFILE.phone;
   return { name, phone, initials: initialsFromName(name) };
 }
 
 function setProfile(profile) {
   const name = (profile?.name || DEFAULT_PROFILE.name).trim() || DEFAULT_PROFILE.name;
-  const phone = (profile?.phone || profile?.email || DEFAULT_PROFILE.phone).trim() || DEFAULT_PROFILE.phone;
+  const phone = (profile?.phone || DEFAULT_PROFILE.phone).trim() || DEFAULT_PROFILE.phone;
   setJSON(STORE.profile, { name, phone, initials: initialsFromName(name) });
 }
 
@@ -294,6 +306,7 @@ function setView(name) {
   const navBtn = document.querySelector(`.nav-item[data-view="${name}"]`);
   $('pageTitle').textContent = navBtn ? navBtn.textContent.trim().replace(/^[^A-Za-z]+/, '') : 'CareLink SG';
   $('sidebar').classList.remove('open');
+  if(name==='checkin') renderCheckinHistory();
   if(name==='monitoring') renderMonitoring();
   if(name==='insights') renderInsightsMeta();
   if(name==='medication') renderMedication();
@@ -382,6 +395,173 @@ function addHealthReading(e){
 
 function deleteReading(id){ const arr=getReadings().filter(r=>String(r.id)!==String(id)); setJSON(STORE.readings,arr.length?arr:DEFAULT_READINGS); renderMonitoring(); toast('Reading removed.'); }
 
+
+function getCheckins() { return getJSON(STORE.checkins, DEFAULT_CHECKINS); }
+function setCheckins(value) { setJSON(STORE.checkins, value); }
+
+function setCheckinMode(mode='voice') {
+  $$('.mode-chip').forEach(btn => btn.classList.toggle('active', btn.dataset.checkinMode === mode));
+  const statusText = {
+    voice: 'Voice-first mode selected. In this prototype, voice input is simulated with the text box below.',
+    text: 'Text mode selected. Type what feels different in your own words.',
+    guided: 'Guided mode selected. Use the simple choices and safety-screening options below.'
+  }[mode] || 'Choose an input method to continue.';
+  if ($('voiceStatus')) $('voiceStatus').textContent = statusText;
+}
+
+function getCheckinData() {
+  return {
+    concern: ($('concernText')?.value || '').trim(),
+    duration: $('durationSelect')?.value || 'not provided',
+    worse: $('worseSelect')?.value || 'not provided',
+    severity: $('severitySelect')?.value || 'mild',
+    redFlags: $$('[data-red-flag]').filter(x => x.checked).map(x => x.dataset.redFlag)
+  };
+}
+
+function classifyCheckin(data) {
+  const text = `${data.concern} ${data.redFlags.join(' ')}`.toLowerCase();
+  const urgentTerms = ['chest', 'breath', 'faint', 'confusion', 'confused', 'severe weakness', 'urgent'];
+  const hasUrgent = data.redFlags.length > 0 || urgentTerms.some(term => text.includes(term));
+  if (hasUrgent || data.severity === 'severe') {
+    return {
+      level: 'red',
+      chip: 'Urgent support suggested',
+      title: 'Seek urgent medical attention',
+      nextStep: 'This may need urgent professional help. Use local emergency services or ask a nearby trusted person to help you get medical support now.',
+      confidence: hasUrgent ? 'High' : 'Medium',
+      why: [
+        data.redFlags.length ? `Urgent warning sign selected: ${data.redFlags.join(', ')}` : 'The concern includes wording that may indicate an urgent warning sign.',
+        `Severity selected: ${data.severity}`,
+        'CareLink SG prioritises safety before normal follow-up questions.'
+      ],
+      action: 'Open Essential emergency contact flow'
+    };
+  }
+  const shouldContact = data.severity === 'moderate' || data.worse !== 'not worse' || data.duration === 'more than 1 day' || /higher|blood pressure|dizzy|pain|fever|vomit|weak/i.test(data.concern);
+  if (shouldContact) {
+    return {
+      level: 'amber',
+      chip: 'Professional support recommended',
+      title: 'Contact a healthcare professional',
+      nextStep: 'Contact a clinic, telehealth service, community care team, or trusted caregiver for advice. Keep monitoring and share the summary if the concern continues or gets worse.',
+      confidence: data.concern.length > 25 ? 'Medium' : 'Low',
+      why: [
+        `Concern described: ${data.concern || 'not provided'}`,
+        `Duration: ${data.duration}; getting worse: ${data.worse}`,
+        'No urgent red flag was selected, but the symptom context may need professional review.'
+      ],
+      action: 'Open Community Care or Care Network'
+    };
+  }
+  return {
+    level: 'green',
+    chip: 'Monitor at home',
+    title: 'Continue monitoring',
+    nextStep: 'Keep observing the change, record any new symptoms or readings, and set a follow-up reminder. Contact professional support if it gets worse or does not improve.',
+    confidence: data.concern.length > 15 ? 'Medium' : 'Low',
+    why: [
+      'No urgent warning sign was selected.',
+      `Severity selected: ${data.severity}`,
+      'The available information supports a lower-risk demo pathway, but this is not a diagnosis.'
+    ],
+    action: 'Set a follow-up reminder'
+  };
+}
+
+function renderDecision(result, data) {
+  const cls = result.level === 'red' ? 'red' : result.level === 'amber' ? 'amber' : 'green';
+  const icon = result.level === 'red' ? '!' : result.level === 'amber' ? '↗' : '✓';
+  const html = `
+    <div class="decision-top">
+      <span class="decision-icon ${cls}">${icon}</span>
+      <div><span class="status-chip ${cls}">${esc(result.chip)}</span><h3>${esc(result.title)}</h3></div>
+    </div>
+    <p>${esc(result.nextStep)}</p>
+    <div class="confidence-box"><strong>Confidence: ${esc(result.confidence)}</strong><span>Based on the information provided in this prototype check-in.</span></div>
+    <details class="why-box" open>
+      <summary>Why this recommendation?</summary>
+      <ul>${result.why.map(item => `<li>${esc(item)}</li>`).join('')}</ul>
+    </details>
+    <div class="decision-pathway"><span class="${result.level==='green'?'active':''}">Monitor</span><b>→</b><span class="${result.level==='amber'?'active':''}">Contact professional</span><b>→</b><span class="${result.level==='red'?'active':''}">Urgent help</span></div>
+    <div class="ai-disclaimer">This is decision support only. It does not diagnose conditions or replace qualified healthcare professionals.</div>`;
+  if ($('decisionResult')) $('decisionResult').innerHTML = html;
+  renderHealthSummary(result, data);
+}
+
+function renderHealthSummary(result, data) {
+  const profile = getProfile();
+  const summary = `
+    <div class="summary-line"><strong>User</strong><span>${esc(profile.name)}</span></div>
+    <div class="summary-line"><strong>Main concern</strong><span>${esc(data.concern || 'Not provided')}</span></div>
+    <div class="summary-line"><strong>Follow-up answers</strong><span>${esc(data.duration)} · ${esc(data.worse)} · ${esc(data.severity)}</span></div>
+    <div class="summary-line"><strong>Safety flags</strong><span>${esc(data.redFlags.length ? data.redFlags.join(', ') : 'None selected')}</span></div>
+    <div class="summary-line"><strong>Suggested next step</strong><span>${esc(result.title)}</span></div>
+    <div class="summary-line"><strong>Confidence</strong><span>${esc(result.confidence)}</span></div>`;
+  if ($('healthSummary')) $('healthSummary').innerHTML = summary;
+}
+
+function saveCheckin(result, data) {
+  const next = [{ id: Date.now(), date: new Date().toISOString(), concern: data.concern || 'Check-in completed', outcome: result.title, level: result.level, confidence: result.confidence }, ...getCheckins()].slice(0, 8);
+  setCheckins(next);
+  renderCheckinHistory();
+}
+
+function runCheckinDecision(e) {
+  if (e) e.preventDefault();
+  const data = getCheckinData();
+  if (!data.concern) { toast('Describe what feels different first.'); return; }
+  const result = classifyCheckin(data);
+  renderDecision(result, data);
+  saveCheckin(result, data);
+  toast('Next-step guidance generated.');
+}
+
+function loadCheckinDemo() {
+  if ($('concernText')) $('concernText').value = 'I feel dizzy today and my blood pressure seems higher than usual. I am not sure whether I should wait or contact someone.';
+  if ($('durationSelect')) $('durationSelect').value = '1-4 hours';
+  if ($('worseSelect')) $('worseSelect').value = 'slightly worse';
+  if ($('severitySelect')) $('severitySelect').value = 'moderate';
+  $$('[data-red-flag]').forEach(x => x.checked = false);
+  setCheckinMode('voice');
+  toast('Loaded a non-urgent dizziness sample.');
+}
+
+function clearCheckinForm() {
+  if ($('concernText')) $('concernText').value = '';
+  if ($('durationSelect')) $('durationSelect').value = 'less than 1 hour';
+  if ($('worseSelect')) $('worseSelect').value = 'not worse';
+  if ($('severitySelect')) $('severitySelect').value = 'mild';
+  $$('[data-red-flag]').forEach(x => x.checked = false);
+  if ($('decisionResult')) $('decisionResult').innerHTML = '<span class="status-chip blue">Ready</span><h3>Describe what feels different</h3><p>CareLink SG will screen for urgent warning signs first, then suggest whether to monitor, contact professional support, or seek urgent help.</p><div class="decision-pathway mini-pathway"><span>Monitor</span><b>→</b><span>Contact professional</span><b>→</b><span>Urgent help</span></div>';
+  if ($('healthSummary')) $('healthSummary').textContent = 'Complete a check-in to generate a clear summary for a healthcare professional or trusted contact.';
+  toast('Check-in form cleared.');
+}
+
+function renderCheckinHistory() {
+  const box = $('checkinHistory');
+  if (!box) return;
+  const items = getCheckins();
+  if (!items.length) {
+    box.innerHTML = '<div class="empty-state">No check-ins saved yet.</div>';
+    return;
+  }
+  box.innerHTML = items.map(item => `<div class="history-item ${esc(item.level)}"><div><strong>${esc(item.outcome)}</strong><span>${esc(item.concern)}</span></div><small>${fmtDate(item.date)} · ${esc(item.confidence)} confidence</small></div>`).join('');
+}
+
+function shareSummaryDemo() {
+  const targets = [];
+  if ($('shareTrusted')?.checked) targets.push('trusted contact');
+  if ($('shareProfessional')?.checked) targets.push('healthcare professional');
+  if (!targets.length) { toast('Choose at least one sharing recipient.'); return; }
+  toast(`Summary shared with ${targets.join(' and ')} in this demo.`);
+}
+
+function setFollowupReminder(label) {
+  if ($('followupStatus')) $('followupStatus').textContent = `Demo reminder set: check again ${label}.`;
+  toast(`Follow-up reminder set for ${label}.`);
+}
+
 function renderInsightsMeta(){ const t=trendSignal(); if($('trendStatus')) $('trendStatus').textContent=t.label; if($('dataWindow')) $('dataWindow').textContent=`${Math.min(7,getReadings().length)} readings`; if($('insightApiState')) $('insightApiState').textContent=apiKey()?'Connected':'API not connected'; }
 
 function buildHealthContext(){
@@ -390,7 +570,8 @@ function buildHealthContext(){
   return {
     readings: readings.map(r=>({date:r.date,heart_rate_bpm:r.hr,blood_pressure:`${r.sys}/${r.dia}`,sleep_hours:r.sleep,steps:r.steps})),
     prototype_trend_signal: trend,
-    medications: meds.map(m=>({name:m.name,dose:m.dose,time:m.time,taken_today:m.taken}))
+    medications: meds.map(m=>({name:m.name,dose:m.dose,time:m.time,taken_today:m.taken})),
+    recent_checkins: getCheckins().slice(0,3).map(c=>({date:c.date, concern:c.concern, outcome:c.outcome, level:c.level, confidence:c.confidence}))
   };
 }
 
@@ -513,7 +694,7 @@ async function connectApi(){
 function disconnectApi(){ sessionStorage.removeItem('carelink_gemini_key'); if($('apiKeyInput')) $('apiKeyInput').value=''; syncApiUI(); toast('Gemini API key cleared and disconnected.'); }
 
 function resetDemoData(){
-  setJSON(STORE.readings,DEFAULT_READINGS); setJSON(STORE.meds,DEFAULT_MEDS); setJSON(STORE.caregivers,DEFAULT_CAREGIVERS); setJSON(STORE.week,DEFAULT_WEEK); setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false}); localStorage.setItem(STORE.wearable,'false'); chatHistory=[]; renderAll(); toast('Demo data restored.');
+  setJSON(STORE.readings,DEFAULT_READINGS); setJSON(STORE.meds,DEFAULT_MEDS); setJSON(STORE.caregivers,DEFAULT_CAREGIVERS); setJSON(STORE.week,DEFAULT_WEEK); setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false}); setJSON(STORE.checkins, DEFAULT_CHECKINS); localStorage.setItem(STORE.wearable,'false'); chatHistory=[]; renderAll(); toast('Demo data restored.');
 }
 
 
@@ -586,7 +767,7 @@ function setupEmergencyHold() {
 
 function demoBooking(service){ openModal(service,`<div class="insight-summary"><div class="insight-icon">✓</div><div><strong>Demo request created</strong><p>This prototype does not connect to a real healthcare provider. In a production system, this step would hand off to an approved provider workflow.</p></div></div><button class="button primary" id="closeDemoBooking">Done</button>`); $('closeDemoBooking').onclick=closeModal; }
 
-function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
+function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderCheckinHistory(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
 
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
@@ -597,6 +778,7 @@ function init(){
   if(!localStorage.getItem(STORE.wearable)) localStorage.setItem(STORE.wearable,'false');
   if(!localStorage.getItem(STORE.largeText)) localStorage.setItem(STORE.largeText,'false');
   if(!localStorage.getItem(STORE.profile)) setProfile(DEFAULT_PROFILE);
+  if(!localStorage.getItem(STORE.checkins)) setJSON(STORE.checkins, DEFAULT_CHECKINS);
   syncLargeTextUI();
   setDefaultReadingTime();
 
@@ -607,6 +789,13 @@ function init(){
 
   $$('.nav-item').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
   $$('[data-go]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.go)));
+  $$('[data-checkin-mode]').forEach(b=>b.addEventListener('click',()=>setCheckinMode(b.dataset.checkinMode)));
+  if ($('checkinForm')) $('checkinForm').addEventListener('submit', runCheckinDecision);
+  if ($('loadCheckinDemo')) $('loadCheckinDemo').onclick = loadCheckinDemo;
+  if ($('clearCheckinBtn')) $('clearCheckinBtn').onclick = clearCheckinForm;
+  if ($('shareSummaryBtn')) $('shareSummaryBtn').onclick = shareSummaryDemo;
+  if ($('clearCheckinHistoryBtn')) $('clearCheckinHistoryBtn').onclick = () => { setCheckins([]); renderCheckinHistory(); toast('Check-in history cleared.'); };
+  $$('[data-reminder]').forEach(b=>b.addEventListener('click',()=>setFollowupReminder(b.dataset.reminder)));
   $('menuBtn').onclick=()=>$('sidebar').classList.toggle('open');
   $('apiTopBtn').onclick=()=>setView('settings');
   if ($('logoutBtn')) $('logoutBtn').onclick=logoutDemo;
