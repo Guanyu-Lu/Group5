@@ -765,6 +765,43 @@ function setupEmergencyHold() {
   btn.addEventListener('contextmenu', e => e.preventDefault());
 }
 
+
+const EXERCISE_GUIDES = {
+  shoulder: {
+    title: 'Shoulder & Neck Release',
+    image: 'images/shoulder-release.svg',
+    alt: 'Illustration showing a shoulder and neck release exercise',
+    steps: ['Sit or stand comfortably with your back relaxed.', 'Slowly lift both shoulders towards your ears.', 'Roll your shoulders backwards in a small circle.', 'Relax your shoulders and repeat at a comfortable pace.'],
+    safety: 'Stop if you feel pain, dizziness, numbness, or unusual discomfort. This is a classroom prototype, not medical advice.'
+  },
+  breathing: {
+    title: 'Breathing Reset',
+    image: 'images/breathing-reset.svg',
+    alt: 'Illustration showing a calm breathing reset exercise',
+    steps: ['Sit comfortably and place one hand on your chest or stomach.', 'Breathe in slowly through your nose.', 'Breathe out gently through your mouth.', 'Repeat slowly for one to two minutes.'],
+    safety: 'Keep the breathing gentle. Stop and seek professional support if breathing feels difficult or symptoms worsen.'
+  },
+  walk: {
+    title: 'Gentle Walk',
+    image: 'images/gentle-walk.svg',
+    alt: 'Illustration showing a gentle walking exercise',
+    steps: ['Choose a safe, flat walking area.', 'Walk slowly at a pace that feels easy.', 'Keep breathing naturally and avoid rushing.', 'Pause or stop if you feel unwell.'],
+    safety: 'Do not continue if you feel dizzy, painful, unusually weak, or unsafe. Follow your actual recovery plan.'
+  }
+};
+
+function openExerciseGuide(id) {
+  const guide = EXERCISE_GUIDES[id] || EXERCISE_GUIDES.shoulder;
+  openModal(guide.title, `
+    <img class="exercise-modal-image" src="${esc(guide.image)}" alt="${esc(guide.alt)}" />
+    <p class="subtle">Follow the image and simple steps below. Move slowly and stay within a comfortable range.</p>
+    <ol class="exercise-modal-list">${guide.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>
+    <div class="exercise-modal-safety"><strong>Safety note:</strong> ${esc(guide.safety)}</div>
+    <div class="modal-actions"><button class="button primary" id="closeExerciseGuide" type="button">Got it</button></div>
+  `);
+  $('closeExerciseGuide').onclick = closeModal;
+}
+
 function demoBooking(service){ openModal(service,`<div class="insight-summary"><div class="insight-icon">✓</div><div><strong>Demo request created</strong><p>This prototype does not connect to a real healthcare provider. In a production system, this step would hand off to an approved provider workflow.</p></div></div><button class="button primary" id="closeDemoBooking">Done</button>`); $('closeDemoBooking').onclick=closeModal; }
 
 function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderCheckinHistory(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
@@ -811,6 +848,7 @@ function init(){
   $('caregiverList').addEventListener('click',e=>{const id=e.target.dataset.deleteCare;if(id){setJSON(STORE.caregivers,getCaregivers().filter(x=>String(x.id)!==String(id)));renderCaregivers();toast('Caregiver removed.');}});
   $$('[data-share]').forEach(i=>i.addEventListener('change',()=>{const share={};$$('[data-share]').forEach(x=>share[x.dataset.share]=x.checked);setJSON(STORE.sharing,share);toast('Sharing preferences saved locally.');}));
   $('notifyCaregiverBtn').onclick=()=>toast('Demo alert sent to enabled caregivers.');
+  $$('[data-exercise-open]').forEach(b=>b.addEventListener('click',()=>openExerciseGuide(b.dataset.exerciseOpen)));
   $$('.book-demo').forEach(b=>b.onclick=()=>demoBooking(b.dataset.service));
   $('quickPrompts').addEventListener('click',e=>{if(e.target.tagName==='BUTTON')sendChat(e.target.textContent);});
   $('chatForm').addEventListener('submit',e=>{e.preventDefault();sendChat($('chatInput').value);});

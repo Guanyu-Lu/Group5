@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=optimized-functions-16" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=exercise-images-17" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=optimized-functions-16" />
+  <link rel="stylesheet" href="styles.css?v=exercise-images-17" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=optimized-functions-16" defer></script>
+  <script src="app.js?v=exercise-images-17" defer></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" aria-label="Authentication">
@@ -40,7 +40,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=optimized-functions-16" alt="" />
+          <img src="carelink-logo.png?v=exercise-images-17" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -54,6 +54,7 @@
         <button class="nav-item" data-view="monitoring"><span>⌁</span> Health Monitoring</button>
         <button class="nav-item" data-view="insights"><span>✦</span> AI Insights</button>
         <button class="nav-item" data-view="medication"><span>◉</span> Medication</button>
+        <button class="nav-item" data-view="exercises"><span>▣</span> Exercises</button>
         <button class="nav-item" data-view="care"><span>♡</span> Care Network</button>
         <button class="nav-item" data-view="community"><span>⌖</span> Community Care</button>
         <button class="nav-item" data-view="essential"><span>!</span> Essential</button>
@@ -353,6 +354,76 @@
           <div class="card-head"><div><p class="eyebrow">7-DAY ADHERENCE</p><h3>Weekly history</h3></div></div>
           <div class="week-strip" id="weekStrip"></div>
         </article>
+      </section>
+
+      <section class="view" id="view-exercises">
+        <div class="section-intro">
+          <div>
+            <p class="eyebrow">RECOVERY GUIDANCE</p>
+            <h2>Exercise Guidance</h2>
+            <p>Visual exercise cards show users how to complete gentle recovery activities instead of relying on imagination.</p>
+          </div>
+          <span class="status-chip green">Image-guided demo</span>
+        </div>
+
+        <article class="card exercise-hero-card">
+          <div>
+            <p class="eyebrow">WHY THIS MATTERS</p>
+            <h3>See the movement before starting</h3>
+            <p>Each activity includes a simple illustration, short steps, duration, and a safety reminder so users can follow the movement more confidently at home.</p>
+          </div>
+          <button class="button primary" data-exercise-open="shoulder">View shoulder demo</button>
+        </article>
+
+        <div class="exercise-grid">
+          <article class="card exercise-card">
+            <div class="exercise-media"><img src="images/shoulder-release.svg" alt="Illustration showing a shoulder and neck release exercise" /></div>
+            <div class="exercise-copy">
+              <p class="eyebrow">1 MIN · GENTLE</p>
+              <h3>Shoulder & Neck Release</h3>
+              <p>Roll the shoulders slowly to reduce tension while breathing naturally.</p>
+              <ol class="exercise-steps">
+                <li>Sit or stand comfortably.</li>
+                <li>Lift both shoulders gently.</li>
+                <li>Roll backwards and relax.</li>
+              </ol>
+              <div class="exercise-safety">Stop if you feel pain, dizziness, or unusual discomfort.</div>
+              <button class="button secondary exercise-demo" type="button" data-exercise-open="shoulder">How to do this</button>
+            </div>
+          </article>
+
+          <article class="card exercise-card">
+            <div class="exercise-media"><img src="images/breathing-reset.svg" alt="Illustration showing a calm breathing reset exercise" /></div>
+            <div class="exercise-copy">
+              <p class="eyebrow">2 MIN · CALM</p>
+              <h3>Breathing Reset</h3>
+              <p>Use slow breathing to settle the body before checking how you feel again.</p>
+              <ol class="exercise-steps">
+                <li>Place one hand on your chest.</li>
+                <li>Breathe in slowly through your nose.</li>
+                <li>Breathe out gently and repeat.</li>
+              </ol>
+              <div class="exercise-safety">Keep the pace comfortable. Stop if breathing feels difficult.</div>
+              <button class="button secondary exercise-demo" type="button" data-exercise-open="breathing">How to do this</button>
+            </div>
+          </article>
+
+          <article class="card exercise-card">
+            <div class="exercise-media"><img src="images/gentle-walk.svg" alt="Illustration showing a gentle walking exercise" /></div>
+            <div class="exercise-copy">
+              <p class="eyebrow">5 MIN · OPTIONAL</p>
+              <h3>Gentle Walk</h3>
+              <p>Move at an easy pace when your recovery plan says light activity is appropriate.</p>
+              <ol class="exercise-steps">
+                <li>Choose a safe, flat area.</li>
+                <li>Walk slowly and keep breathing.</li>
+                <li>Pause if you feel unwell.</li>
+              </ol>
+              <div class="exercise-safety">Do not continue if you feel dizzy, painful, or unusually weak.</div>
+              <button class="button secondary exercise-demo" type="button" data-exercise-open="walk">How to do this</button>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section class="view" id="view-care">
