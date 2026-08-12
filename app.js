@@ -1449,6 +1449,309 @@ function onCaregiverAlertStorageV21(event) {
   }
 }
 
+
+/* v22 registration role + patient location alert update
+   - Register form can create either a patient account or a caregiver account.
+   - Essential alerts show a demo patient location for the caregiver side.
+   - Default demo location: JCU, 149 Sim Dr, Singapore 387380. */
+const V22_PATIENT_LOCATION = {
+  label: 'JCU',
+  address: '149 Sim Dr, Singapore 387380'
+};
+
+function locationTextV22(location = V22_PATIENT_LOCATION) {
+  return `${location.label} · ${location.address}`;
+}
+
+function withDefaultLocationV22(patient) {
+  if (!patient) return patient;
+  return { ...patient, location: patient.location || V22_PATIENT_LOCATION };
+}
+
+const getPatientV20BaseV22 = getPatientV20;
+function getPatientV20(patientId) {
+  const patient = getPatientV20BaseV22(patientId);
+  return withDefaultLocationV22(patient);
+}
+
+const allPatientsV20BaseV22 = allPatientsV20;
+function allPatientsV20() {
+  return allPatientsV20BaseV22().map(withDefaultLocationV22);
+}
+
+function currentCaregiverV22() {
+  const account = currentAccountV20();
+  if (account && account.role === 'caregiver') {
+    return {
+      id: account.caregiverId || V20_CAREGIVER.id,
+      accountId: account.id,
+      name: account.name,
+      initials: account.initials || initialsFromName(account.name),
+      relation: account.id === V20_CAREGIVER.accountId ? V20_CAREGIVER.relation : 'Registered caregiver account'
+    };
+  }
+  return V20_CAREGIVER;
+}
+
+function registerDemo(e) {
+  e.preventDefault();
+  const roleInput = document.querySelector('input[name="registerRole"]:checked');
+  const role = roleInput ? roleInput.value : 'patient';
+  const name = $('registerName').value.trim() || (role === 'caregiver' ? 'Caregiver User' : DEFAULT_PROFILE.name);
+  const phone = $('registerPhone').value.trim();
+  const password = $('registerPassword').value;
+  const confirm = $('registerConfirm').value;
+  if (!phone || !password || !confirm) { toast('Complete the registration form.'); return; }
+  if (password !== confirm) { toast('Passwords do not match.'); return; }
+  if (getAllAccountsV20().some(a => normalisePhone(a.phone) === normalisePhone(phone))) { toast('This phone number is already registered in the demo.'); return; }
+
+  const stamp = Date.now();
+  const account = role === 'caregiver'
+    ? {
+        id: `caregiver-custom-${stamp}`,
+        role: 'caregiver',
+        caregiverId: `custom-caregiver-${stamp}`,
+        name,
+        phone,
+        password,
+        initials: initialsFromName(name)
+      }
+    : {
+        id: `patient-custom-${stamp}`,
+        role: 'patient',
+        patientId: `custom-patient-${stamp}`,
+        name,
+        phone,
+        password,
+        initials: initialsFromName(name),
+        location: V22_PATIENT_LOCATION
+      };
+
+  const accounts = getRegisteredAccountsV20();
+  accounts.push(account);
+  setRegisteredAccountsV20(accounts);
+  if (role === 'patient') bindPatientV20(account.patientId, V20_CAREGIVER.id);
+  sessionStorage.setItem(STORE.auth, account.id);
+  setProfile({ name, phone });
+  showApp();
+  renderAll();
+  toast(`Registered and logged in as ${name} (${role}).`);
+}
+
+function updateRegisterRoleCardsV22() {
+  $$('.role-option').forEach(option => {
+    const input = option.querySelector('input');
+    option.classList.toggle('selected', Boolean(input && input.checked));
+  });
+}
+
+function caregiverIdForCurrentViewV22() {
+  return currentCaregiverV22().id;
+}
+
+function createEmergencyAlertV21(patientId) {
+  const patient = getPatientV20(patientId) || withDefaultLocationV22(V20_PATIENTS[0]);
+  const alerts = getEmergencyAlertsV21();
+  const alert = {
+    id: `alert-${Date.now()}`,
+    patientId,
+    patientName: patient.name,
+    patientInitials: patient.initials,
+    patientLocation: patient.location || V22_PATIENT_LOCATION,
+    caregiverId: V20_CAREGIVER.id,
+    type: 'Essential long-press',
+    createdAt: new Date().toISOString(),
+    acknowledged: false
+  };
+  alerts.push(alert);
+  setEmergencyAlertsV21(alerts);
+  localStorage.setItem(V21_ALERT_SIGNAL_KEY, String(Date.now()));
+  return alert;
+}
+
+function pendingEmergencyAlertsV21() {
+  const caregiverId = caregiverIdForCurrentViewV22();
+  return getEmergencyAlertsV21().filter(a => a.caregiverId === caregiverId && !a.acknowledged);
+}
+
+function showPendingCaregiverAlertV21() {
+  if (currentRoleV20() !== 'caregiver') return;
+  const modal = $('modalBackdrop');
+  if (modal && !modal.hidden) return;
+  const alert = pendingEmergencyAlertsV21()[0];
+  if (!alert) return;
+  const loc = alert.patientLocation || V22_PATIENT_LOCATION;
+  openModal('Emergency caregiver alert', `
+    <div class="caregiver-alert-modal">
+      <div class="insight-summary urgent-alert-summary">
+        <div class="insight-icon danger-icon">!</div>
+        <div>
+          <strong>${esc(alert.patientName)} activated Essential support</strong>
+          <p>${esc(alert.patientName)} used the patient-side Essential button. This demo alert appears in the caregiver account.</p>
+        </div>
+      </div>
+      <div class="alert-detail-grid">
+        <div><span>Alert type</span><strong>${esc(alert.type)}</strong></div>
+        <div><span>Time</span><strong>${esc(fmtDate(alert.createdAt))}</strong></div>
+        <div><span>Patient location</span><strong>${esc(locationTextV22(loc))}</strong></div>
+        <div><span>Suggested action</span><strong>Check the patient and follow the support pathway.</strong></div>
+      </div>
+      <p class="subtle">Demo only: this is not a real emergency service, GPS tracker, or clinical monitoring system. The location is a classroom-demo value.</p>
+      <div class="modal-actions">
+        <button class="button secondary" id="viewAlertPatientsBtn" type="button">View patients</button>
+        <button class="button primary" id="ackCaregiverAlertBtn" type="button">Acknowledge alert</button>
+      </div>
+    </div>
+  `);
+  $('viewAlertPatientsBtn').onclick = () => { closeModal(); setView('caregiver'); };
+  $('ackCaregiverAlertBtn').onclick = () => {
+    acknowledgeEmergencyAlertV21(alert.id);
+    closeModal();
+    renderCaregiverPatients();
+    toast('Caregiver alert acknowledged.');
+  };
+}
+
+function renderCaregiverPatients() {
+  const list = $('caregiverPatientList');
+  if (!list) return;
+  const caregiver = currentCaregiverV22();
+  const alerts = pendingEmergencyAlertsV21();
+  const alertByPatientId = new Map(alerts.map(a => [a.patientId, a]));
+  const boundPatients = allPatientsV20().filter(patient => isBoundV20(patient.id, caregiver.id));
+  if (!boundPatients.length) {
+    list.innerHTML = `<div class="empty-state">No patients are currently bound to ${esc(caregiver.name)}.</div>`;
+  } else {
+    list.innerHTML = boundPatients.map(patient => {
+      const alert = alertByPatientId.get(patient.id);
+      const location = (alert && alert.patientLocation) || patient.location || V22_PATIENT_LOCATION;
+      return `
+        <article class="patient-status-card ${esc(patient.status)} ${alert ? 'has-alert' : ''}">
+          <div class="patient-status-avatar">${esc(patient.initials)}</div>
+          <div class="patient-status-name">
+            <strong>${esc(patient.name)}</strong>
+            <span>${esc(patient.relationship)}</span>
+            ${alert ? `<small class="patient-location-line">Location: ${esc(locationTextV22(location))}</small>` : ''}
+          </div>
+          <span class="patient-status-badge ${esc(patient.status)}">${esc(patient.label)}</span>
+          ${alert ? '<span class="patient-alert-pill">Essential alert</span>' : ''}
+          <button class="button danger-outline small" data-unbind-patient="${esc(patient.id)}" type="button">Unbind</button>
+        </article>
+      `;
+    }).join('');
+  }
+  renderCaregiverBindListV20();
+  showPendingCaregiverAlertV21();
+}
+
+function renderCaregiverBindListV20() {
+  const el = $('caregiverBindList');
+  if (!el) return;
+  const caregiver = currentCaregiverV22();
+  const patients = allPatientsV20();
+  el.innerHTML = patients.map(patient => {
+    const bound = isBoundV20(patient.id, caregiver.id);
+    const isCustom = patient.source === 'custom';
+    return `
+      <div class="bind-row ${isCustom ? 'custom-patient-row' : ''}">
+        <span><strong>${esc(patient.name)}</strong><small>${esc(patient.relationship)} · ${esc(patient.label)}</small></span>
+        <div class="bind-row-actions">
+          <button class="button ${bound ? 'danger-outline' : 'secondary'} small" data-${bound ? 'unbind' : 'bind'}-patient="${esc(patient.id)}" type="button">${bound ? 'Unbind' : 'Bind'}</button>
+          ${isCustom ? `<button class="text-button danger" data-remove-custom-patient="${esc(patient.id)}" type="button">Remove</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  $$('[data-bind-patient], [data-unbind-patient]').forEach(btn => {
+    btn.onclick = () => {
+      const patientId = btn.dataset.bindPatient || btn.dataset.unbindPatient;
+      const shouldBind = Boolean(btn.dataset.bindPatient);
+      setPatientBindingV20(patientId, shouldBind, caregiver.id);
+      renderCaregiverPatients();
+      if (currentRoleV20() === 'patient') renderCaregivers();
+      toast(shouldBind ? `Patient bound to ${caregiver.name}.` : `Patient unbound from ${caregiver.name}.`);
+    };
+  });
+  $$('[data-remove-custom-patient]').forEach(btn => {
+    btn.onclick = () => removeCustomPatientV21(btn.dataset.removeCustomPatient);
+  });
+}
+
+function addPatientModalV21() {
+  const caregiver = currentCaregiverV22();
+  openModal('Add patient', `
+    <form id="addPatientForm" class="add-patient-form">
+      <label>Patient name
+        <input id="newPatientName" required placeholder="e.g. Mr Lim" />
+      </label>
+      <label>Relationship / context
+        <input id="newPatientRelation" required placeholder="e.g. Neighbour, parent, post-discharge patient" />
+      </label>
+      <label>Current status
+        <select id="newPatientStatus">
+          <option value="green">Healthy / Green</option>
+          <option value="yellow">Danger / Yellow</option>
+          <option value="red">Urgent / Red</option>
+        </select>
+      </label>
+      <label>Patient location
+        <input id="newPatientLocation" value="${esc(locationTextV22())}" />
+      </label>
+      <p class="subtle">This adds a local classroom-demo patient and binds the patient to ${esc(caregiver.name)} automatically.</p>
+      <div class="modal-actions">
+        <button type="button" class="button secondary" id="cancelModal">Cancel</button>
+        <button class="button primary" type="submit">Add and bind</button>
+      </div>
+    </form>
+  `);
+  $('cancelModal').onclick = closeModal;
+  $('addPatientForm').onsubmit = (e) => {
+    e.preventDefault();
+    const name = $('newPatientName').value.trim();
+    const relationship = $('newPatientRelation').value.trim();
+    const status = $('newPatientStatus').value;
+    const locationRaw = $('newPatientLocation').value.trim();
+    if (!name || !relationship) { toast('Enter patient name and relationship.'); return; }
+    const patient = {
+      id: `custom-patient-${Date.now()}`,
+      accountId: null,
+      name,
+      initials: initialsFromName(name),
+      relationship,
+      status,
+      label: statusLabelV21(status),
+      source: 'custom',
+      location: locationRaw ? { label: locationRaw.split('·')[0]?.trim() || 'Location', address: locationRaw.split('·').slice(1).join('·').trim() || locationRaw } : V22_PATIENT_LOCATION
+    };
+    const custom = getCustomPatientsV21();
+    custom.push(patient);
+    setCustomPatientsV21(custom);
+    bindPatientV20(patient.id, caregiver.id);
+    closeModal();
+    renderCaregiverPatients();
+    toast(`${name} added and bound to ${caregiver.name}.`);
+  };
+}
+
+function triggerEmergencyContact() {
+  clearTimeout(emergencyHoldTimer);
+  clearInterval(emergencyProgressTimer);
+  const btn = $('holdEmergencyBtn');
+  const progress = $('holdProgress');
+  if (progress) progress.style.width = '100%';
+  if (btn) {
+    btn.classList.remove('holding');
+    btn.classList.add('activated');
+  }
+  const alert = createEmergencyAlertV21(currentPatientIdV20());
+  const loc = alert.patientLocation || V22_PATIENT_LOCATION;
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = `Emergency contact call activated: ${V20_CAREGIVER.name}.`;
+  toast('Emergency alert sent to Rachel Tan in this demo.');
+  openModal('Emergency contact', `<div class="insight-summary"><div class="insight-icon">!</div><div><strong>Calling ${esc(V20_CAREGIVER.name)}</strong><p>This classroom prototype has activated the emergency contact flow. Rachel Tan will see an emergency alert popup with the patient location when logged in as caregiver.</p></div></div><div class="alert-detail-grid"><div><span>Patient</span><strong>${esc(alert.patientName)}</strong></div><div><span>Alert</span><strong>Essential long-press</strong></div><div><span>Patient location</span><strong>${esc(locationTextV22(loc))}</strong></div></div><div class="modal-actions"><button class="button secondary" id="resetEmergencyDemo">Reset demo call</button><button class="button primary" id="closeEmergencyModal">Done</button></div>`);
+  $('resetEmergencyDemo').onclick = () => { if (btn) btn.classList.remove('activated'); closeModal(); resetEmergencyHold(); updatePatientCaregiverUIV20(); };
+  $('closeEmergencyModal').onclick = closeModal;
+}
+
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
   if(!localStorage.getItem(STORE.meds)) setJSON(STORE.meds,DEFAULT_MEDS);
@@ -1464,6 +1767,8 @@ function init(){
 
   if ($('loginTab')) $('loginTab').onclick = () => setAuthMode('login');
   if ($('registerTab')) $('registerTab').onclick = () => setAuthMode('register');
+  $$('input[name="registerRole"]').forEach(input => input.addEventListener('change', updateRegisterRoleCardsV22));
+  updateRegisterRoleCardsV22();
   if ($('loginForm')) $('loginForm').addEventListener('submit', loginDemo);
   if ($('registerForm')) $('registerForm').addEventListener('submit', registerDemo);
 
