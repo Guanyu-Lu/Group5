@@ -1921,3 +1921,114 @@ function addCaregiverModal() {
     toast('Caregiver added locally.');
   };
 }
+
+/* v26 robust Rachel parents binding repair
+   Some browsers may keep an old localStorage state where Rachel's parents were unbound
+   while the previous migration flag was already marked as complete. This version repairs
+   the default binding at render time, while preserving any unbind action made after v26. */
+const V26_RACHEL_PARENT_IDS = ['david', 'mdm-tan'];
+const V26_PARENT_OPT_OUT_KEY = 'carelink_rachel_parent_opt_out_v26';
+
+function getParentOptOutV26() {
+  return getJSON(V26_PARENT_OPT_OUT_KEY, {});
+}
+
+function setParentOptOutV26(value) {
+  setJSON(V26_PARENT_OPT_OUT_KEY, value || {});
+}
+
+function ensureRachelParentsBoundV26() {
+  const optOut = getParentOptOutV26();
+  const bindings = getBindingsV20();
+  let changed = false;
+  V26_RACHEL_PARENT_IDS.forEach(patientId => {
+    if (optOut[patientId]) return;
+    const exists = bindings.some(item => item.patientId === patientId && item.caregiverId === V20_CAREGIVER.id);
+    if (!exists) {
+      bindings.push({ patientId, caregiverId: V20_CAREGIVER.id });
+      changed = true;
+    }
+  });
+  if (changed) setBindingsV20(bindings);
+}
+
+function ensureRachelParentsBoundV24() {
+  ensureRachelParentsBoundV26();
+}
+
+function setPatientBindingV20(patientId, bound, caregiverId = V20_CAREGIVER.id) {
+  const optOut = getParentOptOutV26();
+  if (caregiverId === V20_CAREGIVER.id && V26_RACHEL_PARENT_IDS.includes(patientId)) {
+    if (bound) delete optOut[patientId];
+    else optOut[patientId] = true;
+    setParentOptOutV26(optOut);
+  }
+  bound ? bindPatientV20(patientId, caregiverId) : unbindPatientV20(patientId, caregiverId);
+}
+
+function renderCaregiverPatients() {
+  const list = $('caregiverPatientList');
+  if (!list) return;
+  const caregiver = currentCaregiverV22();
+  if (caregiver.id === V20_CAREGIVER.id) ensureRachelParentsBoundV26();
+  const alerts = pendingEmergencyAlertsV21();
+  const alertByPatientId = new Map(alerts.map(a => [a.patientId, a]));
+  const boundPatients = allPatientsV20().filter(patient => isBoundV20(patient.id, caregiver.id));
+  if (!boundPatients.length) {
+    list.innerHTML = `<div class="empty-state">No patients are currently bound to ${esc(caregiver.name)}.</div>`;
+  } else {
+    list.innerHTML = boundPatients.map(patient => {
+      const alert = alertByPatientId.get(patient.id);
+      const location = (alert && alert.patientLocation) || patient.location || V22_PATIENT_LOCATION;
+      return `
+        <article class="patient-status-card ${esc(patient.status)} ${alert ? 'has-alert' : ''}">
+          <div class="patient-status-avatar">${esc(patient.initials)}</div>
+          <div class="patient-status-name">
+            <strong>${esc(patient.name)}</strong>
+            <span>${esc(patient.relationship)}</span>
+            ${alert ? `<small class="patient-location-line">Location: ${esc(locationTextV22(location))}</small>` : ''}
+          </div>
+          <span class="patient-status-badge ${esc(patient.status)}">${esc(patient.label)}</span>
+          ${alert ? '<span class="patient-alert-pill">Essential alert</span>' : ''}
+          <button class="button danger-outline small" data-unbind-patient="${esc(patient.id)}" type="button">Unbind</button>
+        </article>
+      `;
+    }).join('');
+  }
+  renderCaregiverBindListV20();
+  showPendingCaregiverAlertV21();
+}
+
+function renderCaregiverBindListV20() {
+  const el = $('caregiverBindList');
+  if (!el) return;
+  const caregiver = currentCaregiverV22();
+  if (caregiver.id === V20_CAREGIVER.id) ensureRachelParentsBoundV26();
+  const patients = allPatientsV20();
+  el.innerHTML = patients.map(patient => {
+    const bound = isBoundV20(patient.id, caregiver.id);
+    const isCustom = patient.source === 'custom';
+    return `
+      <div class="bind-row ${isCustom ? 'custom-patient-row' : ''}">
+        <span><strong>${esc(patient.name)}</strong><small>${esc(patient.relationship)} · ${esc(patient.label)}</small></span>
+        <div class="bind-row-actions">
+          <button class="button ${bound ? 'danger-outline' : 'secondary'} small" data-${bound ? 'unbind' : 'bind'}-patient="${esc(patient.id)}" type="button">${bound ? 'Unbind' : 'Bind'}</button>
+          ${isCustom ? `<button class="text-button danger" data-remove-custom-patient="${esc(patient.id)}" type="button">Remove</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  $$('[data-bind-patient], [data-unbind-patient]').forEach(btn => {
+    btn.onclick = () => {
+      const patientId = btn.dataset.bindPatient || btn.dataset.unbindPatient;
+      const shouldBind = Boolean(btn.dataset.bindPatient);
+      setPatientBindingV20(patientId, shouldBind, caregiver.id);
+      renderCaregiverPatients();
+      if (currentRoleV20() === 'patient') renderCaregivers();
+      toast(shouldBind ? `Patient bound to ${caregiver.name}.` : `Patient unbound from ${caregiver.name}.`);
+    };
+  });
+  $$('[data-remove-custom-patient]').forEach(btn => {
+    btn.onclick = () => removeCustomPatientV21(btn.dataset.removeCustomPatient);
+  });
+}
