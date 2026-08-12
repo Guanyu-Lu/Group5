@@ -1818,3 +1818,80 @@ function init(){
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/* v23 restore patient Care Network layout
+   - Patient side returns to the original Care Network style with Rachel Tan and Community Care Team cards.
+   - Rachel Tan card still controls the real patient-caregiver binding for the two-role demo.
+   - Community Care Team and added supporters remain local demo contacts.
+*/
+function renderCaregivers() {
+  const list = $('caregiverList');
+  if (!list) return;
+  const patientId = currentPatientIdV20();
+  const patient = getPatientV20(patientId) || V20_PATIENTS[0];
+  const bound = isBoundV20(patientId, V20_CAREGIVER.id);
+  const people = getCaregivers();
+  const supportPeople = people.filter(p => String(p.name).toLowerCase() !== 'rachel tan');
+  if ($('addCaregiverBtn')) $('addCaregiverBtn').textContent = '+ Add caregiver';
+  list.innerHTML = `
+    <article class="caregiver-card binding-card ${bound ? 'bound' : 'unbound'}">
+      <div class="person-avatar">${esc(V20_CAREGIVER.initials)}</div>
+      <div>
+        <strong>${esc(V20_CAREGIVER.name)}</strong>
+        <span>Daughter · Primary emergency contact · ${bound ? `Bound to ${esc(patient.name)}` : 'Not currently bound'}</span>
+      </div>
+      <button class="button ${bound ? 'danger-outline' : 'secondary'} small" id="togglePatientCaregiverBtn" type="button">${bound ? 'Unbind' : 'Bind'}</button>
+    </article>
+    ${supportPeople.map(p => `
+      <article class="caregiver-card">
+        <div class="person-avatar">${esc(p.initials)}</div>
+        <div>
+          <strong>${esc(p.name)}</strong>
+          <span>${esc(p.relation)} · ${p.alerts ? 'Health alerts enabled' : 'Alerts off'}</span>
+        </div>
+        <button class="text-button danger" data-delete-care="${esc(p.id)}" type="button">Remove</button>
+      </article>
+    `).join('')}
+  `;
+  const toggleBtn = $('togglePatientCaregiverBtn');
+  if (toggleBtn) toggleBtn.onclick = () => toggleCurrentPatientBindingV23();
+  const share = getJSON(STORE.sharing, { bp: true, hr: true, meds: true, sleep: false });
+  $$('[data-share]').forEach(i => i.checked = Boolean(share[i.dataset.share]));
+  updatePatientCaregiverUIV20();
+}
+
+function toggleCurrentPatientBindingV23() {
+  const patientId = currentPatientIdV20();
+  const bound = isBoundV20(patientId, V20_CAREGIVER.id);
+  setPatientBindingV20(patientId, !bound, V20_CAREGIVER.id);
+  renderCaregivers();
+  renderCaregiverPatients();
+  updatePatientCaregiverUIV20();
+  toast(!bound ? 'Rachel Tan has been bound to this patient.' : 'Rachel Tan has been unbound from this patient.');
+}
+
+function addCaregiverModal() {
+  openModal('Add caregiver', `
+    <form id="careForm">
+      <label>Name<input id="careName" required placeholder="e.g. Family member"></label>
+      <label>Relationship / role<input id="careRole" required placeholder="e.g. Son, caregiver, care coordinator"></label>
+      <div class="modal-actions">
+        <button type="button" class="button secondary" id="cancelModal">Cancel</button>
+        <button class="button primary" type="submit">Add caregiver</button>
+      </div>
+    </form>
+  `);
+  $('cancelModal').onclick = closeModal;
+  $('careForm').onsubmit = e => {
+    e.preventDefault();
+    const name = $('careName').value.trim();
+    const words = name.split(/\s+/);
+    const initials = ((words[0]?.[0] || 'C') + (words[1]?.[0] || '')).toUpperCase();
+    const arr = getCaregivers();
+    arr.push({ id: Date.now(), name, relation: $('careRole').value.trim(), initials, alerts: true });
+    setJSON(STORE.caregivers, arr);
+    closeModal();
+    renderCaregivers();
+    toast('Caregiver added locally.');
+  };
+}
