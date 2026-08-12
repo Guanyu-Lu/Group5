@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=rachel-parents-bound-24" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=v21-role-location-27" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=rachel-parents-visible-25" />
+  <link rel="stylesheet" href="styles.css?v=v21-role-location-27" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=rachel-parents-visible-25" defer></script>
+  <script src="app.js?v=v21-role-location-27" defer></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" aria-label="Authentication">
@@ -27,15 +27,16 @@
       </form>
 
       <form class="auth-form" id="registerForm" autocomplete="on">
-        <fieldset class="auth-role-field" aria-label="Register as">
-          <legend>Register as</legend>
-          <label class="role-option selected"><input type="radio" name="registerRole" value="patient" checked /> Patient</label>
-          <label class="role-option"><input type="radio" name="registerRole" value="caregiver" /> Caregiver</label>
-        </fieldset>
         <label>Full name<input type="text" id="registerName" autocomplete="name" value="David Tan" required /></label>
         <label>Phone number<input type="tel" id="registerPhone" autocomplete="tel" inputmode="tel" placeholder="+65 9123 4567" required /></label>
         <label>Password<input type="password" id="registerPassword" autocomplete="new-password" required /></label>
         <label>Confirm password<input type="password" id="registerConfirm" autocomplete="new-password" required /></label>
+        <label>Register as
+          <select id="registerRole" required>
+            <option value="patient">Patient</option>
+            <option value="caregiver">Caregiver</option>
+          </select>
+        </label>
         <button class="button primary" type="submit">Register</button>
       </form>
     </div>
@@ -45,7 +46,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=rachel-parents-bound-24" alt="" />
+          <img src="carelink-logo.png?v=v21-role-location-27" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -458,7 +459,7 @@
       </section>
 
       <section class="view" id="view-care">
-        <div class="section-intro"><div><p class="eyebrow">CONNECTED CARE</p><h2>Care Network</h2><p>Give users control over what health information is shared with trusted supporters.</p></div><button class="button primary" id="addCaregiverBtn">+ Add caregiver</button></div>
+        <div class="section-intro"><div><p class="eyebrow">CONNECTED CARE</p><h2>Care Network</h2><p>Bind or unbind your approved caregiver account. The caregiver can only see your colour status in this demo.</p></div><button class="button primary" id="addCaregiverBtn">Bind caregiver</button></div>
 
         <div class="care-grid" id="caregiverList"></div>
 
