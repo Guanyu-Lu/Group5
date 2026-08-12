@@ -30,7 +30,7 @@ Use the following fixed demo accounts to test the role-based prototype.
 | Patient | Mdm Tan | `+65 12345678` | `carelink456` |
 | Caregiver | Rachel Tan | `+65 98765432` | `carelink789` |
 
-David Tan and Mdm Tan are demo patients bound to Rachel Tan as their caregiver.
+David Tan and Mdm Tan are demo patients bound to Rachel Tan as their caregiver. Rachel Tan is the daughter of David Tan and Mdm Tan.
 
 ---
 
@@ -348,7 +348,7 @@ To deploy on GitHub Pages:
 Recommended test URL after uploading a new version:
 
 ```text
-https://guanyu-lu.github.io/Group5/?v=latest
+https://guanyu-lu.github.io/Group5/
 ```
 
 Adding a query string helps avoid browser cache issues during testing.
@@ -373,6 +373,16 @@ Recommended test sequence:
 Browser cache may keep old versions of static files. If a change does not appear, open the site in a private window or clear site data for `guanyu-lu.github.io`.
 
 ---
+
+## Author
+
+**Guanyu Lu**
+
+Design Sprint TR2 2026
+
+James Cook University Singapore
+
+12 August 2026
 
 ## Disclaimer
 
