@@ -2070,3 +2070,98 @@ select:focus { border-color:#76bdb5; box-shadow:0 0 0 3px #e2f3f0; }
   .bind-row { align-items: stretch; flex-direction: column; }
   .bind-row .button { width: 100%; justify-content: center; }
 }
+
+/* v21 caregiver alert + add-patient refinements */
+.home-essential-contact .mini-avatar,
+.compact-contact .mini-avatar,
+.home-essential-contact .avatar {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  font-style: normal !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+.compact-head {
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.bind-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.patient-status-card.has-alert {
+  border-color: rgba(177, 72, 72, .44) !important;
+  box-shadow: 0 14px 36px rgba(177, 72, 72, .13);
+}
+
+.patient-alert-pill {
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.alert-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.alert-detail-grid div {
+  border: 1px solid var(--line);
+  background: #f8fbfb;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.alert-detail-grid span,
+.alert-detail-grid strong {
+  display: block;
+}
+
+.alert-detail-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.danger-icon {
+  background: var(--danger-soft) !important;
+  color: var(--danger) !important;
+}
+
+.urgent-alert-summary {
+  border-color: rgba(177, 72, 72, .25);
+  background: linear-gradient(135deg, #fff, var(--danger-soft));
+}
+
+.add-patient-form select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  font: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .alert-detail-grid { grid-template-columns: 1fr; }
+  .bind-row-actions { width: 100%; justify-content: stretch; }
+  .bind-row-actions .button { flex: 1; }
+  .patient-alert-pill { grid-column: 1 / -1; text-align: center; }
+}

@@ -8,9 +8,9 @@
   <link rel="icon" type="image/png" href="carelink-logo.png?v=two-role-20" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=two-role-20" />
+  <link rel="stylesheet" href="styles.css?v=caregiver-alert-21" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=two-role-20" defer></script>
+  <script src="app.js?v=caregiver-alert-21" defer></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" aria-label="Authentication">
@@ -508,9 +508,14 @@
           </article>
 
           <article class="card caregiver-bind-card">
-            <p class="eyebrow">BINDING CONTROL</p>
-            <h3>Manage patient links</h3>
-            <p class="subtle">Use this classroom demo control to bind or unbind Rachel Tan from the available patient accounts.</p>
+            <div class="card-head compact-head">
+              <div>
+                <p class="eyebrow">BINDING CONTROL</p>
+                <h3>Manage patient links</h3>
+              </div>
+              <button class="button secondary small" id="addPatientBtn" type="button">+ Add patient</button>
+            </div>
+            <p class="subtle">Use this classroom demo control to add, bind, or unbind patients from Rachel Tan's caregiver account.</p>
             <div class="bind-control-list" id="caregiverBindList"></div>
           </article>
         </div>
