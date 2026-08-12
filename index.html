@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=rachel-contact-18" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=multi-end-19" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=rachel-contact-18" />
+  <link rel="stylesheet" href="styles.css?v=multi-end-19" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=rachel-contact-18" defer></script>
+  <script src="app.js?v=multi-end-19" defer></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" aria-label="Authentication">
@@ -40,7 +40,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=rachel-contact-18" alt="" />
+          <img src="carelink-logo.png?v=multi-end-19" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -56,8 +56,8 @@
         <button class="nav-item" data-view="medication"><span>◉</span> Medication</button>
         <button class="nav-item" data-view="exercises"><span>▣</span> Exercises</button>
         <button class="nav-item" data-view="care"><span>♡</span> Care Network</button>
+        <button class="nav-item" data-view="caregiver"><span>👥</span> Caregiver View</button>
         <button class="nav-item" data-view="community"><span>⌖</span> Community Care</button>
-        <button class="nav-item" data-view="essential"><span>!</span> Essential</button>
         <button class="nav-item" data-view="assistant"><span>✧</span> AI Assistant</button>
         <button class="nav-item" data-view="settings"><span>⚙</span> Settings</button>
       </nav>
@@ -107,6 +107,32 @@
             <div><strong id="scoreLabel">Stable</strong><span>Today’s wellness score</span></div>
           </div>
         </div>
+
+        <article class="card home-essential-card" id="homeEssentialCard">
+          <div class="home-essential-copy">
+            <div class="emergency-icon home-emergency-icon">!</div>
+            <div>
+              <p class="eyebrow">ESSENTIAL SUPPORT</p>
+              <h3>Hold to call emergency contact</h3>
+              <p>Patient homepage access for urgent caregiver support in this classroom prototype.</p>
+            </div>
+          </div>
+          <div class="home-essential-contact">
+            <div class="emergency-contact-card compact-contact">
+              <span class="avatar mini-avatar">RT</span>
+              <div>
+                <strong>Rachel Tan</strong>
+                <span>Daughter · Primary emergency contact</span>
+              </div>
+            </div>
+            <button class="emergency-hold-button compact-hold" id="holdEmergencyBtn" type="button" aria-describedby="emergencyHint">
+              <span class="hold-progress" id="holdProgress" aria-hidden="true"></span>
+              <span class="hold-button-content"><strong>Hold 3 seconds</strong><small>Call emergency contact</small></span>
+            </button>
+            <p class="subtle" id="emergencyHint">Press and hold for 3 seconds to activate the emergency contact call demo.</p>
+            <div class="emergency-status" id="emergencyStatus">Ready for long-press action.</div>
+          </div>
+        </article>
 
         <div class="metric-grid">
           <article class="metric-card"><div class="metric-icon">♥</div><div class="metric-label">Heart rate</div><div class="metric-value"><span id="dashHr">72</span> <small>bpm</small></div><div class="metric-foot positive">Within demo range</div></article>
@@ -259,11 +285,11 @@
           <article class="card support-card">
             <p class="eyebrow">PROFESSIONAL SUPPORT</p>
             <h3>Find the right support level</h3>
-            <p>CareLink SG can route users to community care, telehealth, a trusted contact, or the Essential emergency contact flow depending on the result.</p>
+            <p>CareLink SG can route users to community care, telehealth, a trusted contact, or the dashboard emergency contact flow depending on the result.</p>
             <div class="support-actions">
               <button class="button secondary small" data-go="community" type="button">Community care</button>
               <button class="button secondary small" data-go="care" type="button">Care network</button>
-              <button class="button danger-outline small" data-go="essential" type="button">Essential</button>
+              <button class="button danger-outline small" data-go="dashboard" type="button">Emergency contact</button>
             </div>
           </article>
         </div>
@@ -446,6 +472,41 @@
         </article>
       </section>
 
+      <section class="view" id="view-caregiver">
+        <div class="section-intro">
+          <div>
+            <p class="eyebrow">CAREGIVER TERMINAL</p>
+            <h2>Caregiver View</h2>
+            <p>Shows the status colour for every bound patient only. Detailed health data stays in the patient view.</p>
+          </div>
+          <span class="status-chip blue">Multi-end demo</span>
+        </div>
+
+        <article class="card caregiver-terminal-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">BOUND PATIENTS</p>
+              <h3>Patient status overview</h3>
+            </div>
+            <span class="subtle">Status only · no readings shown</span>
+          </div>
+          <div class="patient-status-grid" id="caregiverPatientList"></div>
+        </article>
+
+        <article class="card status-legend-card">
+          <p class="eyebrow">STATUS LEGEND</p>
+          <div class="status-legend-row">
+            <span class="legend-dot healthy"></span><strong>Healthy</strong><small>Green status means the patient is currently stable in this prototype.</small>
+          </div>
+          <div class="status-legend-row">
+            <span class="legend-dot danger"></span><strong>Danger</strong><small>Yellow status means the patient may need caregiver attention.</small>
+          </div>
+          <div class="status-legend-row">
+            <span class="legend-dot urgent"></span><strong>Urgent</strong><small>Red status means the patient should be checked immediately.</small>
+          </div>
+        </article>
+      </section>
+
       <section class="view" id="view-community">
         <div class="section-intro"><div><p class="eyebrow">COMMUNITY SUPPORT</p><h2>Community Care</h2><p>Prototype pathways from home monitoring to appropriate community-based support.</p></div></div>
 
@@ -463,46 +524,6 @@
         <div class="urgent-note"><strong>Urgent situations:</strong> This prototype is not an emergency service. In a real product, emergency guidance should be designed with qualified clinical and local-service input.</div>
       </section>
 
-
-      <section class="view" id="view-essential">
-        <div class="section-intro"><div><p class="eyebrow">ESSENTIAL SUPPORT</p><h2>Essential</h2><p>Quick access for urgent caregiver support in this classroom prototype.</p></div></div>
-
-        <div class="essential-grid">
-          <article class="card emergency-card">
-            <div class="emergency-head">
-              <div class="emergency-icon" aria-hidden="true">!</div>
-              <div>
-                <p class="eyebrow">EMERGENCY CONTACT</p>
-                <h3>Hold to call emergency contact</h3>
-              </div>
-            </div>
-            <div class="emergency-contact-card">
-              <div class="care-avatar">RT</div>
-              <div>
-                <strong>Rachel Tan</strong>
-                <span>Daughter · Primary emergency contact</span>
-              </div>
-            </div>
-            <button class="emergency-hold-button" id="holdEmergencyBtn" type="button" aria-describedby="emergencyHint">
-              <span class="hold-progress" id="holdProgress" aria-hidden="true"></span>
-              <span class="hold-button-content"><strong>Hold 3 seconds</strong><small>Call emergency contact</small></span>
-            </button>
-            <p class="subtle" id="emergencyHint">Press and hold the button for 3 seconds to activate the emergency contact call demo.</p>
-            <div class="emergency-status" id="emergencyStatus">Ready for long-press action.</div>
-          </article>
-
-          <article class="card essential-card">
-            <p class="eyebrow">CARE ESCALATION</p>
-            <h3>Suggested support pathway</h3>
-            <div class="essential-steps">
-              <div><span>1</span><strong>Contact caregiver</strong><small>Primary family support</small></div>
-              <div><span>2</span><strong>Share health summary</strong><small>Recent readings and medication status</small></div>
-              <div><span>3</span><strong>Seek professional help</strong><small>Use local emergency services for real emergencies</small></div>
-            </div>
-            <p class="urgent-note compact"><strong>Demo only:</strong> This page does not replace real emergency services or professional medical advice.</p>
-          </article>
-        </div>
-      </section>
 
       <section class="view" id="view-assistant">
         <div class="assistant-layout">

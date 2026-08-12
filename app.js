@@ -33,6 +33,12 @@ const DEFAULT_CAREGIVERS = [
   { id: 2, name: 'Community Care Team', relation: 'Care coordinator', initials: 'CC', alerts: true }
 ];
 
+const DEFAULT_BOUND_PATIENTS = [
+  { id: 1, name: 'David Tan', initials: 'DT', status: 'green', label: 'Healthy' },
+  { id: 2, name: 'Mdm Lee', initials: 'ML', status: 'yellow', label: 'Danger' },
+  { id: 3, name: 'Mr Wong', initials: 'MW', status: 'red', label: 'Urgent' }
+];
+
 const DEFAULT_WEEK = [
   { day: 'Mon', state: 'done' }, { day: 'Tue', state: 'done' }, { day: 'Wed', state: 'done' },
   { day: 'Thu', state: 'missed' }, { day: 'Fri', state: 'done' }, { day: 'Sat', state: 'done' }, { day: 'Sun', state: 'done' }
@@ -323,6 +329,7 @@ function setView(name) {
   if(name==='insights') renderInsightsMeta();
   if(name==='medication') renderMedication();
   if(name==='care') renderCaregivers();
+  if(name==='caregiver') renderCaregiverPatients();
   if(name==='assistant') renderAssistantContext();
   if(name==='settings') syncApiUI();
   window.scrollTo({top:0, behavior:'smooth'});
@@ -447,7 +454,7 @@ function classifyCheckin(data) {
         `Severity selected: ${data.severity}`,
         'CareLink SG prioritises safety before normal follow-up questions.'
       ],
-      action: 'Open Essential emergency contact flow'
+      action: 'Open dashboard emergency contact flow'
     };
   }
   const shouldContact = data.severity === 'moderate' || data.worse !== 'not worse' || data.duration === 'more than 1 day' || /higher|blood pressure|dizzy|pain|fever|vomit|weak/i.test(data.concern);
@@ -814,9 +821,21 @@ function openExerciseGuide(id) {
   $('closeExerciseGuide').onclick = closeModal;
 }
 
+function renderCaregiverPatients(){
+  const list = $('caregiverPatientList');
+  if (!list) return;
+  list.innerHTML = DEFAULT_BOUND_PATIENTS.map(patient => `
+    <article class="patient-status-card ${esc(patient.status)}">
+      <div class="patient-status-avatar">${esc(patient.initials)}</div>
+      <div class="patient-status-name"><strong>${esc(patient.name)}</strong><span>Bound patient</span></div>
+      <span class="patient-status-badge ${esc(patient.status)}">${esc(patient.label)}</span>
+    </article>
+  `).join('');
+}
+
 function demoBooking(service){ openModal(service,`<div class="insight-summary"><div class="insight-icon">✓</div><div><strong>Demo request created</strong><p>This prototype does not connect to a real healthcare provider. In a production system, this step would hand off to an approved provider workflow.</p></div></div><button class="button primary" id="closeDemoBooking">Done</button>`); $('closeDemoBooking').onclick=closeModal; }
 
-function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderCheckinHistory(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
+function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderCaregiverPatients(); renderCheckinHistory(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
 
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
