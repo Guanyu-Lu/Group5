@@ -900,6 +900,31 @@ function unbindPatientV20(patientId, caregiverId='rachel') {
 }
 function setPatientBindingV20(patientId, bound) { bound ? bindPatientV20(patientId) : unbindPatientV20(patientId); }
 
+
+
+/* v24 Rachel parents pre-bound migration
+   Ensures Rachel Tan's father and mother appear in the caregiver dashboard by default.
+   Runs once per browser so users can still unbind/rebind during the demo after the migration. */
+const V24_RACHEL_PARENTS_BOUND_KEY = 'carelink_rachel_parents_bound_v24';
+function ensureRachelParentsBoundV24() {
+  if (localStorage.getItem(V24_RACHEL_PARENTS_BOUND_KEY) === 'true') return;
+  const required = [
+    { patientId: 'david', caregiverId: V20_CAREGIVER.id },
+    { patientId: 'mdm-tan', caregiverId: V20_CAREGIVER.id }
+  ];
+  const bindings = getBindingsV20();
+  let changed = false;
+  required.forEach(binding => {
+    const exists = bindings.some(item => item.patientId === binding.patientId && item.caregiverId === binding.caregiverId);
+    if (!exists) {
+      bindings.push(binding);
+      changed = true;
+    }
+  });
+  if (changed) setBindingsV20(bindings);
+  localStorage.setItem(V24_RACHEL_PARENTS_BOUND_KEY, 'true');
+}
+
 function isAuthenticated() { return Boolean(currentAccountV20()); }
 function getProfile() {
   const account = currentAccountV20();
@@ -1762,6 +1787,7 @@ function init(){
   if(!localStorage.getItem(STORE.largeText)) localStorage.setItem(STORE.largeText,'false');
   if(!localStorage.getItem(STORE.profile)) setProfile(DEFAULT_PROFILE);
   if(!localStorage.getItem(STORE.checkins)) setJSON(STORE.checkins, DEFAULT_CHECKINS);
+  ensureRachelParentsBoundV24();
   syncLargeTextUI();
   setDefaultReadingTime();
 
