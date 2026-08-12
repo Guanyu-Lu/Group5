@@ -1,128 +1,379 @@
-# CareLink SG — AI-powered Community Health Companion
+# CareLink SG — Multi-end Home Recovery Support Prototype
 
-Static GitHub Pages prototype for the **Healthcare Beyond Hospitals** design challenge.
+CareLink SG is a static GitHub Pages prototype created for the **Healthcare Beyond Hospitals** design challenge. It demonstrates how a simple AI-enabled web application can support home recovery, health check-ins, medication adherence, caregiver coordination, emergency contact support, and community healthcare handoff.
 
-CareLink SG demonstrates how an AI-enabled digital solution can support home-based health monitoring, preventive care, medication adherence, caregiver connection, and community healthcare handoff.
+**Live Demo:** [https://guanyu-lu.github.io/Group5/](https://guanyu-lu.github.io/Group5/)
 
- **Live Demo:** [Click here to experience our Platform](https://guanyu-lu.github.io/Group5/)
- 
- **Scan the QR code below to open the CareLink SG web prototype:** ![CareLink SG Web QR Code](./Web_QR.png)
+**QR Code:**  
+![CareLink SG Web QR Code](./Web_QR.png)
 
-## Supported Features
+---
 
-### 1. Dashboard
+## Prototype Focus
 
-- Shows a daily home health snapshot.
-- Displays health score, heart rate, blood pressure, sleep, and steps.
-- Includes a care plan timeline for daily check-ins and medication reminders.
-- Provides quick actions for adding health readings and connecting a simulated smartwatch.
-- Supports AI-generated daily summary when Gemini API is connected.
+CareLink SG helps users manage recovery and health concerns from home. The prototype supports a two-end workflow:
 
-### 2. Health Monitoring
+- **Patient end:** used by patients to check in, monitor health, review AI-supported guidance, manage medication, view exercises, contact caregivers, and access community care.
+- **Caregiver end:** used by caregivers to view bound patients at a high level through colour-coded status cards and receive demo emergency alerts.
 
-- Allows the user to manually add health readings:
-  - Date and time
-  - Heart rate
-  - Systolic blood pressure
-  - Diastolic blood pressure
-  - Sleep hours
-  - Steps
-- Displays the latest blood pressure reading and demo risk label.
-- Shows recent entries in a reading history table.
-- Includes a blood pressure trend chart using Chart.js.
-- Provides reset functionality for demo readings.
-- Includes **Load rising blood pressure sample** to quickly generate a presentation-ready rising blood pressure trend.
+The prototype is designed for classroom demonstration only. It does **not** diagnose medical conditions or replace qualified healthcare professionals.
 
-### 3. AI Health Insights
+---
 
-- Uses Gemini 2.5 Flash to generate plain-language health trend explanations.
-- Sends recent demo readings, medication status, and prototype trend signals to Gemini when the user requests an analysis.
-- Renders AI output as formatted Markdown preview, including lists and bold text.
-- Includes **How the AI Insight Works** to explain the prototype logic:
-  - Collect latest stored readings.
-  - Detect sustained changes using simple local rules.
-  - Use Gemini to explain the result clearly.
-  - Escalate safely by encouraging professional support when appropriate.
+## Demo Accounts
 
-### 4. Medication Manager
+Use the following fixed demo accounts to test the role-based prototype.
 
-- Shows current medication schedule.
-- Supports adding new medication entries.
-- Allows medication status to be marked as taken or upcoming.
-- Shows weekly medication adherence.
-- Displays next reminder information.
+| Role | Name | Phone Number | Password |
+|---|---|---|---|
+| Patient | David Tan | `+65 9123 4567` | `carelink123` |
+| Patient | Mdm Tan | `+65 12345678` | `carelink456` |
+| Caregiver | Rachel Tan | `+65 98765432` | `carelink789` |
 
-### 5. Care Network
+David Tan and Mdm Tan are demo patients bound to Rachel Tan as their caregiver.
 
-- Shows connected caregivers and community care contacts.
-- Supports caregiver sharing preferences for:
-  - Blood pressure
-  - Heart rate
-  - Medication adherence
-  - Sleep data
-- Includes a demo caregiver alert workflow for unusual blood pressure trends.
+---
 
-### 6. Community Care
+## Main Features
 
-- Provides prototype cards for community-based support options:
-  - Community Health Centre
-  - Telehealth consultation
-  - Caregiver support
-- Demonstrates a safe handoff pathway from home monitoring to community care.
-- Includes an urgent-care note to remind users to seek professional help when needed.
+### 1. Role-based Login and Registration
 
-### 7. AI Assistant
+- Supports phone-number login.
+- Includes a registration form.
+- New users can choose to register as either:
+  - **Patient**
+  - **Caregiver**
+- Login role determines which interface is shown.
+- Patient accounts enter the patient dashboard.
+- Caregiver accounts enter the caregiver dashboard.
 
-- Provides a chatbot-style interface powered by Gemini 2.5 Flash.
-- Supports quick demo prompts such as explaining blood pressure trends or summarising recent health data.
-- Uses the current prototype data as context.
-- Displays AI responses with Markdown preview formatting.
+### 2. Patient Dashboard
 
-### 8. Gemini API Connection
+The patient dashboard provides a home recovery overview for the logged-in patient.
 
-- Includes an API key input field on the Settings page.
-- Supports **Connect & test** to check the Gemini connection.
-- Supports **Clear / Disconnect** to remove the API key immediately.
-- The API key is stored only in `sessionStorage`, not in the repository source code.
-- No API key is committed to GitHub.
+It includes:
 
-### 9. Display Mode
+- Daily health summary
+- Health score
+- Heart rate, blood pressure, sleep, and steps
+- Recovery plan timeline
+- Quick actions for health tracking
+- Essential emergency contact module
+- Caregiver connection status
 
-- Includes a **Large text version** toggle in Settings.
-- Large text mode improves readability during classroom presentation or accessibility-focused demonstration.
-- The selected display mode is saved locally in the browser.
+### 3. Essential Emergency Contact
 
-### 10. Settings Information Pages
+The Essential module is placed on the patient dashboard for quick access.
+
+It supports:
+
+- A long-press emergency contact demo
+- Three-second hold interaction
+- Emergency contact activation modal
+- Rachel Tan as the bound caregiver contact
+- Demo patient location shown in the alert flow
+
+The demo location used in this prototype is:
+
+```text
+JCU · 149 Sim Dr, Singapore 387380
+```
+
+In a production system, this would require secure location permission handling, backend support, and emergency workflow integration.
+
+### 4. Caregiver Dashboard
+
+Rachel Tan's caregiver account shows a separate caregiver interface rather than placing caregiver features inside the patient side.
+
+The caregiver dashboard includes:
+
+- Bound patient list
+- Colour-coded patient status only:
+  - **Green / Healthy**
+  - **Yellow / Danger**
+  - **Red / Urgent**
+- Bind / unbind patient controls
+- Add patient demo function
+- Emergency alert popup when a patient activates Essential support
+- Patient location display inside the alert popup
+
+The caregiver view intentionally avoids showing detailed private health data such as exact heart rate, blood pressure, medication details, or symptom notes. This supports a privacy-aware caregiver workflow.
+
+### 5. Patient–Caregiver Binding
+
+The prototype supports demo binding relationships between patients and the caregiver.
+
+Patient side:
+
+- Patients can bind or unbind Rachel Tan in the Care Network page.
+- If no caregiver is bound, the Essential emergency contact flow is disabled.
+- If Rachel Tan is bound, the patient can activate the Essential contact flow.
+
+Caregiver side:
+
+- Rachel Tan can view currently bound patients.
+- Rachel Tan can bind / unbind patients.
+- Rachel Tan can add a local demo patient through the caregiver dashboard.
+
+### 6. Something Feels Different Check-in
+
+The Check-in page supports a low-friction health concern workflow.
+
+It includes:
+
+- Voice / text / guided selection entry points
+- “Something feels different” starting point
+- Adaptive follow-up style questions
+- Urgent safety screening
+- Next-step guidance
+- Confidence level
+- “Why this recommendation?” explanation
+- Follow-up reminder option
+- Shareable health summary
+- Consent-based sharing option
+- Check-in history
+
+This makes the prototype more than a static health tracker. It demonstrates how users can describe concerns without needing to know a medical category first.
+
+### 7. Health Monitoring
+
+The Health Monitoring page allows patients to add and review home health readings.
+
+Supported readings include:
+
+- Heart rate
+- Systolic blood pressure
+- Diastolic blood pressure
+- Sleep hours
+- Steps
+- Date and time
+
+It also includes:
+
+- Latest blood pressure summary
+- Recent readings table
+- Blood pressure trend chart
+- Demo sample button for rising blood pressure
+- Reset demo readings function
+
+### 8. AI Health Insights
+
+The AI Insights page demonstrates how recent readings and prototype trend signals can be turned into plain-language explanations.
+
+It includes:
+
+- AI-supported trend explanation
+- Local trend detection logic
+- Gemini API integration option
+- “How the AI Insight Works” explanation
+- Safety-focused guidance that avoids medical diagnosis
+
+The prototype explains health trends and suggests safer next steps, but it does not diagnose conditions.
+
+### 9. Medication Manager
+
+The Medication page supports medication adherence demonstration.
+
+It includes:
+
+- Medication schedule
+- Dose timing
+- Taken / upcoming status
+- Add medication function
+- Weekly adherence display
+- Next reminder information
+
+### 10. Exercise Guidance with Images
+
+The Exercises page provides visual recovery activity support.
+
+It includes image-based guidance for:
+
+- Shoulder & Neck Release
+- Breathing Reset
+- Gentle Walk
+
+Each exercise includes:
+
+- Illustration
+- Step-by-step instructions
+- Safety note
+- “How to do this” detail modal
+
+This improves the recovery experience because users can see how to perform an activity instead of relying on text-only instructions.
+
+### 11. Care Network
+
+The Care Network page manages the patient’s trusted caregiver connection.
+
+It includes:
+
+- Rachel Tan caregiver profile
+- Bind / unbind action
+- Sharing preference controls
+- Demo caregiver notification flow
+- Consent-focused information sharing explanation
+
+### 12. Community Care
+
+The Community Care page demonstrates a pathway from home support to community-based care.
+
+It includes prototype cards for:
+
+- Community Health Centre
+- Telehealth consultation
+- Caregiver support
+
+It also includes an urgent-care reminder explaining that emergency symptoms require professional help.
+
+### 13. AI Assistant
+
+The AI Assistant page provides a chatbot-style support interface.
+
+It includes:
+
+- Prompt input
+- Quick demo prompts
+- Gemini API integration when connected
+- Prototype context summary
+- Plain-language response formatting
+
+### 14. Settings and Privacy Information
 
 The Settings page includes:
 
-- **About** — explains what CareLink SG is and how it supports healthcare beyond hospitals.
-- **Q&A** — provides presentation-ready answers about the prototype, AI role, data storage, and safety limits.
-- **Privacy Protection Statement** — explains local storage, API key handling, Gemini data sharing, and prototype limitations.
+- Gemini API connection box
+- Connect and test function
+- Clear / disconnect function
+- Large text mode toggle
+- About section
+- Q&A section
+- Privacy Protection Statement
+- Reset demo data option
 
-### 11. Prototype Data Storage
+The API key is stored in `sessionStorage` only and is not committed to the repository.
 
-- Health readings, medications, caregiver data, sharing settings, wearable status, and display mode are stored in browser `localStorage`.
-- Gemini API key is stored in browser `sessionStorage` only.
-- Reset demo data restores the default prototype state.
-- Data is intended for classroom demonstration only.
+---
 
-### 12. Responsive Web Design
+## Accessibility and Inclusive Design
 
-- Works as a static HTML/CSS/JavaScript website.
-- Designed for GitHub Pages deployment.
-- Responsive layout for desktop and smaller screens.
-- Uses an icon-only CareLink SG product mark with consistent brand styling.
+CareLink SG includes several accessibility-focused design choices:
 
-## Files
+- Large text mode
+- Simple button labels
+- Visual status indicators
+- Colour-coded patient status
+- Guided selection for check-ins
+- Image-based exercise instructions
+- Mobile responsive layout
+- No wearable device required for core use
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `carelink-logo.png`
-- `README.md`
-- `.gitignore`
+---
 
-## Important Note
+## Data Storage and Prototype Limitations
 
-This is a **classroom prototype only**. It supports health awareness, preventive care demonstration, and care coordination scenarios. It does **not** diagnose medical conditions, provide clinical treatment, or replace qualified healthcare professionals.
+This is a static front-end prototype. It uses browser storage only.
+
+### Stored in `localStorage`
+
+- Health readings
+- Medication entries
+- Caregiver list
+- Patient-caregiver binding state
+- Check-in history
+- Custom demo patients
+- Display preferences
+- Demo emergency alerts
+
+### Stored in `sessionStorage`
+
+- Current login session
+- Gemini API key
+
+### Important limitations
+
+- There is no backend database.
+- Data is stored only in the browser used for testing.
+- Cross-device real-time alerts are not fully supported in this static prototype.
+- Caregiver emergency alert popup is a classroom demo interaction.
+- Real deployment would require authentication, secure backend storage, audit logs, consent management, and notification infrastructure.
+
+---
+
+## Gemini API Use
+
+CareLink SG can optionally connect to Gemini for AI-supported explanations.
+
+The prototype sends only selected demo context when the user asks for an AI response, such as:
+
+- Recent health readings
+- Medication status
+- Check-in summary
+- Trend signal
+
+No API key is included in the source code. Users must enter their own key at presentation time.
+
+---
+
+## Project Files
+
+```text
+Group5-main/
+├── index.html
+├── styles.css
+├── app.js
+├── carelink-logo.png
+├── Web_QR.png
+├── README.md
+└── images/
+    ├── shoulder-release.svg
+    ├── breathing-reset.svg
+    └── gentle-walk.svg
+```
+
+---
+
+## Deployment
+
+This project does not require a build step.
+
+To deploy on GitHub Pages:
+
+1. Upload all files to the repository root.
+2. Make sure `index.html`, `styles.css`, `app.js`, `carelink-logo.png`, `Web_QR.png`, and the `images/` folder are in the root directory.
+3. Go to **Settings → Pages**.
+4. Select the main branch and root folder.
+5. Open the deployed GitHub Pages URL.
+
+Recommended test URL after uploading a new version:
+
+```text
+https://guanyu-lu.github.io/Group5/?v=latest
+```
+
+Adding a query string helps avoid browser cache issues during testing.
+
+---
+
+## Testing Notes
+
+Recommended test sequence:
+
+1. Login as David Tan.
+2. Check the patient dashboard.
+3. Bind Rachel Tan in Care Network if needed.
+4. Long-press the Essential contact button.
+5. Logout.
+6. Login as Rachel Tan.
+7. Check the caregiver dashboard and emergency alert popup.
+8. Review the patient status colour cards.
+9. Test Add patient, Bind, and Unbind actions.
+10. Test the Register page with both Patient and Caregiver roles.
+
+Browser cache may keep old versions of static files. If a change does not appear, open the site in a private window or clear site data for `guanyu-lu.github.io`.
+
+---
+
+## Disclaimer
+
+CareLink SG is a **classroom prototype only**. It supports demonstration of health awareness, recovery support, caregiver coordination, and community care workflows. It does not diagnose medical conditions, provide medical treatment, or replace qualified healthcare professionals.
