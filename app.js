@@ -837,6 +837,351 @@ function demoBooking(service){ openModal(service,`<div class="insight-summary"><
 
 function renderAll(){ updateProfileUI(); renderDashboard(); renderMonitoring(); renderMedication(); renderCaregivers(); renderCaregiverPatients(); renderCheckinHistory(); renderAssistantContext(); renderInsightsMeta(); syncApiUI(); syncLargeTextUI(); }
 
+
+
+/* v20 two-role account and binding update
+   Patient and caregiver views are separated by login account.
+   Caregiver can only see colour status for bound patients. */
+const V20_ACCOUNTS = [
+  { id: 'patient-david', role: 'patient', patientId: 'david', name: 'David Tan', phone: '+65 9123 4567', password: 'carelink123', initials: 'DT' },
+  { id: 'patient-mdm-tan', role: 'patient', patientId: 'mdm-tan', name: 'Mdm Tan', phone: '+65 12345678', password: 'carelink456', initials: 'MT', relation: "Rachel Tan's mother" },
+  { id: 'caregiver-rachel', role: 'caregiver', caregiverId: 'rachel', name: 'Rachel Tan', phone: '+65 98765432', password: 'carelink789', initials: 'RT' }
+];
+
+const V20_PATIENTS = [
+  { id: 'david', accountId: 'patient-david', name: 'David Tan', initials: 'DT', relationship: "Rachel Tan's father", status: 'green', label: 'Healthy' },
+  { id: 'mdm-tan', accountId: 'patient-mdm-tan', name: 'Mdm Tan', initials: 'MT', relationship: "Rachel Tan's mother", status: 'yellow', label: 'Danger' }
+];
+
+const V20_CAREGIVER = { id: 'rachel', accountId: 'caregiver-rachel', name: 'Rachel Tan', initials: 'RT', relation: 'Daughter · Primary caregiver' };
+const V20_DEFAULT_BINDINGS = [
+  { patientId: 'david', caregiverId: 'rachel' },
+  { patientId: 'mdm-tan', caregiverId: 'rachel' }
+];
+const V20_REGISTERED_ACCOUNTS_KEY = 'carelink_registered_accounts_v20';
+const V20_BINDINGS_KEY = 'carelink_bindings_v20';
+
+function getRegisteredAccountsV20() { return getJSON(V20_REGISTERED_ACCOUNTS_KEY, []); }
+function setRegisteredAccountsV20(accounts) { setJSON(V20_REGISTERED_ACCOUNTS_KEY, accounts); }
+function getAllAccountsV20() { return [...V20_ACCOUNTS, ...getRegisteredAccountsV20()]; }
+function accountByIdV20(id) { return getAllAccountsV20().find(a => a.id === id) || null; }
+function currentAccountV20() {
+  const stored = sessionStorage.getItem(STORE.auth);
+  if (!stored) return null;
+  if (stored === 'true') return accountByIdV20('patient-david');
+  return accountByIdV20(stored) || null;
+}
+function currentRoleV20() { return currentAccountV20()?.role || 'patient'; }
+function currentPatientIdV20() { return currentAccountV20()?.patientId || 'david'; }
+function getPatientV20(patientId) {
+  const patient = V20_PATIENTS.find(p => p.id === patientId);
+  if (patient) return patient;
+  const account = getRegisteredAccountsV20().find(a => a.patientId === patientId);
+  return account ? { id: account.patientId, accountId: account.id, name: account.name, initials: initialsFromName(account.name), relationship: 'Registered patient', status: 'green', label: 'Healthy' } : null;
+}
+function allPatientsV20() {
+  const registered = getRegisteredAccountsV20()
+    .filter(a => a.role === 'patient')
+    .map(a => ({ id: a.patientId, accountId: a.id, name: a.name, initials: initialsFromName(a.name), relationship: 'Registered patient', status: 'green', label: 'Healthy' }));
+  return [...V20_PATIENTS, ...registered];
+}
+function getBindingsV20() { return getJSON(V20_BINDINGS_KEY, V20_DEFAULT_BINDINGS); }
+function setBindingsV20(bindings) { setJSON(V20_BINDINGS_KEY, bindings); }
+function isBoundV20(patientId, caregiverId='rachel') { return getBindingsV20().some(b => b.patientId === patientId && b.caregiverId === caregiverId); }
+function bindPatientV20(patientId, caregiverId='rachel') {
+  const bindings = getBindingsV20();
+  if (!bindings.some(b => b.patientId === patientId && b.caregiverId === caregiverId)) {
+    bindings.push({ patientId, caregiverId });
+    setBindingsV20(bindings);
+  }
+}
+function unbindPatientV20(patientId, caregiverId='rachel') {
+  setBindingsV20(getBindingsV20().filter(b => !(b.patientId === patientId && b.caregiverId === caregiverId)));
+}
+function setPatientBindingV20(patientId, bound) { bound ? bindPatientV20(patientId) : unbindPatientV20(patientId); }
+
+function isAuthenticated() { return Boolean(currentAccountV20()); }
+function getProfile() {
+  const account = currentAccountV20();
+  if (account) return { name: account.name, phone: account.phone, initials: account.initials || initialsFromName(account.name), role: account.role };
+  const fallback = getJSON(STORE.profile, DEFAULT_PROFILE);
+  const name = fallback?.name || DEFAULT_PROFILE.name;
+  return { name, phone: fallback?.phone || DEFAULT_PROFILE.phone, initials: initialsFromName(name), role: 'patient' };
+}
+
+function showApp() {
+  if ($('authScreen')) $('authScreen').hidden = true;
+  if ($('appShell')) $('appShell').hidden = false;
+  applyRoleShellV20();
+  updateProfileUI();
+  setView(currentRoleV20() === 'caregiver' ? 'caregiver' : 'dashboard');
+}
+
+function showAuth(mode='login') {
+  setAuthMode(mode);
+  if ($('authScreen')) $('authScreen').hidden = false;
+  if ($('appShell')) $('appShell').hidden = true;
+  document.body.classList.remove('caregiver-mode');
+}
+
+function updateProfileUI() {
+  const profile = getProfile();
+  if ($('profileName')) $('profileName').textContent = profile.name;
+  if ($('profileAvatar')) $('profileAvatar').textContent = profile.initials;
+  if ($('heroGreeting')) $('heroGreeting').textContent = `Good afternoon, ${profile.name.split(/\s+/)[0] || 'David'}.`;
+  document.body.classList.toggle('caregiver-mode', profile.role === 'caregiver');
+}
+
+function applyRoleShellV20() {
+  const role = currentRoleV20();
+  document.body.classList.toggle('caregiver-mode', role === 'caregiver');
+  $$('[data-role-nav]').forEach(btn => {
+    const scope = btn.dataset.roleNav;
+    const visible = scope === role || scope === 'all';
+    btn.hidden = !visible;
+    btn.classList.toggle('active', false);
+  });
+  if (role === 'caregiver') {
+    $$('.view').forEach(v => v.classList.remove('active'));
+    const caregiverView = $('view-caregiver');
+    if (caregiverView) caregiverView.classList.add('active');
+  }
+}
+
+function setView(name) {
+  const role = currentRoleV20();
+  const target = role === 'caregiver' ? 'caregiver' : (name === 'caregiver' ? 'dashboard' : name);
+  $$('.view').forEach(v => v.classList.remove('active'));
+  $$('.nav-item').forEach(n => {
+    const scope = n.dataset.roleNav || 'patient';
+    const visible = scope === role || scope === 'all';
+    n.hidden = !visible;
+    n.classList.toggle('active', visible && n.dataset.view === target);
+  });
+  const view = $(`view-${target}`);
+  if (view) view.classList.add('active');
+  const navBtn = document.querySelector(`.nav-item[data-view="${target}"]`);
+  const titles = { caregiver: 'Caregiver Dashboard' };
+  if ($('pageTitle')) $('pageTitle').textContent = titles[target] || (navBtn ? navBtn.textContent.trim().replace(/^[^A-Za-z]+/, '') : 'CareLink SG');
+  if ($('sidebar')) $('sidebar').classList.remove('open');
+  if(target==='checkin') renderCheckinHistory();
+  if(target==='monitoring') renderMonitoring();
+  if(target==='insights') renderInsightsMeta();
+  if(target==='medication') renderMedication();
+  if(target==='care') renderCaregivers();
+  if(target==='caregiver') renderCaregiverPatients();
+  if(target==='assistant') renderAssistantContext();
+  if(target==='settings') syncApiUI();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function loginDemo(e) {
+  e.preventDefault();
+  const phone = $('loginPhone').value.trim();
+  const password = $('loginPassword').value.trim();
+  if (!phone || !password) { toast('Enter phone number and password.'); return; }
+  const account = getAllAccountsV20().find(a => normalisePhone(a.phone) === normalisePhone(phone) && a.password === password);
+  if (!account) { toast('Phone number or password is incorrect.'); return; }
+  sessionStorage.setItem(STORE.auth, account.id);
+  setProfile({ name: account.name, phone: account.phone });
+  showApp();
+  renderAll();
+  toast(`Logged in as ${account.name}.`);
+}
+
+function registerDemo(e) {
+  e.preventDefault();
+  const name = $('registerName').value.trim() || DEFAULT_PROFILE.name;
+  const phone = $('registerPhone').value.trim();
+  const password = $('registerPassword').value;
+  const confirm = $('registerConfirm').value;
+  if (!phone || !password || !confirm) { toast('Complete the registration form.'); return; }
+  if (password !== confirm) { toast('Passwords do not match.'); return; }
+  if (getAllAccountsV20().some(a => normalisePhone(a.phone) === normalisePhone(phone))) { toast('This phone number is already registered in the demo.'); return; }
+  const patientId = `custom-${Date.now()}`;
+  const account = { id: `patient-${patientId}`, role: 'patient', patientId, name, phone, password, initials: initialsFromName(name) };
+  const accounts = getRegisteredAccountsV20();
+  accounts.push(account);
+  setRegisteredAccountsV20(accounts);
+  sessionStorage.setItem(STORE.auth, account.id);
+  setProfile({ name, phone });
+  showApp();
+  renderAll();
+  toast(`Registered and logged in as ${name}.`);
+}
+
+function logoutDemo() {
+  sessionStorage.removeItem(STORE.auth);
+  if ($('loginPassword')) $('loginPassword').value = '';
+  if ($('loginPhone')) $('loginPhone').value = '';
+  setAuthMode('login');
+  showAuth('login');
+}
+
+function renderCaregivers() {
+  const list = $('caregiverList');
+  if (!list) return;
+  const patientId = currentPatientIdV20();
+  const bound = isBoundV20(patientId);
+  const patient = getPatientV20(patientId) || V20_PATIENTS[0];
+  if ($('addCaregiverBtn')) $('addCaregiverBtn').textContent = bound ? 'Unbind caregiver' : 'Bind caregiver';
+  list.innerHTML = `
+    <article class="caregiver-card binding-card ${bound ? 'bound' : 'unbound'}">
+      <div class="person-avatar">${esc(V20_CAREGIVER.initials)}</div>
+      <div>
+        <strong>${esc(V20_CAREGIVER.name)}</strong>
+        <span>${esc(V20_CAREGIVER.relation)} · ${bound ? `Bound to ${esc(patient.name)}` : 'Not bound to this patient'}</span>
+      </div>
+      <button class="button ${bound ? 'danger-outline' : 'secondary'} small" id="togglePatientCaregiverBtn" type="button">${bound ? 'Unbind' : 'Bind'}</button>
+    </article>
+  `;
+  const btn = $('togglePatientCaregiverBtn');
+  if (btn) btn.onclick = () => toggleCurrentPatientBindingV20();
+  updatePatientCaregiverUIV20();
+}
+
+function addCaregiverModal() { toggleCurrentPatientBindingV20(); }
+function toggleCurrentPatientBindingV20() {
+  const patientId = currentPatientIdV20();
+  const bound = isBoundV20(patientId);
+  setPatientBindingV20(patientId, !bound);
+  renderCaregivers();
+  renderCaregiverPatients();
+  updatePatientCaregiverUIV20();
+  toast(!bound ? 'Rachel Tan has been bound to this patient.' : 'Rachel Tan has been unbound from this patient.');
+}
+
+function updatePatientCaregiverUIV20() {
+  const patientId = currentPatientIdV20();
+  const bound = isBoundV20(patientId);
+  const name = bound ? V20_CAREGIVER.name : 'No caregiver bound';
+  const initials = bound ? V20_CAREGIVER.initials : '—';
+  const relation = bound ? 'Daughter · Primary emergency contact' : 'Bind Rachel Tan in Care Network first';
+  if ($('homeCaregiverName')) $('homeCaregiverName').textContent = name;
+  if ($('homeCaregiverInitials')) $('homeCaregiverInitials').textContent = initials;
+  if ($('homeCaregiverRelation')) $('homeCaregiverRelation').textContent = relation;
+  const hold = $('holdEmergencyBtn');
+  if (hold) {
+    hold.disabled = !bound;
+    hold.classList.toggle('disabled', !bound);
+    const content = hold.querySelector('.hold-button-content');
+    if (content) content.innerHTML = bound ? '<strong>Hold 3 seconds</strong><small>Call emergency contact</small>' : '<strong>Bind caregiver first</strong><small>Emergency call disabled</small>';
+  }
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = bound ? 'Ready for long-press action.' : 'No emergency caregiver is currently bound.';
+}
+
+function renderCaregiverPatients() {
+  const list = $('caregiverPatientList');
+  if (!list) return;
+  const boundPatients = allPatientsV20().filter(patient => isBoundV20(patient.id));
+  if (!boundPatients.length) {
+    list.innerHTML = '<div class="empty-state">No patients are currently bound to Rachel Tan.</div>';
+  } else {
+    list.innerHTML = boundPatients.map(patient => `
+      <article class="patient-status-card ${esc(patient.status)}">
+        <div class="patient-status-avatar">${esc(patient.initials)}</div>
+        <div class="patient-status-name"><strong>${esc(patient.name)}</strong><span>${esc(patient.relationship)}</span></div>
+        <span class="patient-status-badge ${esc(patient.status)}">${esc(patient.label)}</span>
+        <button class="button danger-outline small" data-unbind-patient="${esc(patient.id)}" type="button">Unbind</button>
+      </article>
+    `).join('');
+  }
+  renderCaregiverBindListV20();
+}
+
+function renderCaregiverBindListV20() {
+  const el = $('caregiverBindList');
+  if (!el) return;
+  const patients = allPatientsV20();
+  el.innerHTML = patients.map(patient => {
+    const bound = isBoundV20(patient.id);
+    return `
+      <div class="bind-row">
+        <span><strong>${esc(patient.name)}</strong><small>${esc(patient.relationship)}</small></span>
+        <button class="button ${bound ? 'danger-outline' : 'secondary'} small" data-${bound ? 'unbind' : 'bind'}-patient="${esc(patient.id)}" type="button">${bound ? 'Unbind' : 'Bind'}</button>
+      </div>
+    `;
+  }).join('');
+  $$('[data-bind-patient], [data-unbind-patient]').forEach(btn => {
+    btn.onclick = () => {
+      const patientId = btn.dataset.bindPatient || btn.dataset.unbindPatient;
+      const shouldBind = Boolean(btn.dataset.bindPatient);
+      setPatientBindingV20(patientId, shouldBind);
+      renderCaregiverPatients();
+      if (currentRoleV20() === 'patient') renderCaregivers();
+      toast(shouldBind ? 'Patient bound to Rachel Tan.' : 'Patient unbound from Rachel Tan.');
+    };
+  });
+}
+
+function startEmergencyHold(event) {
+  if (event) event.preventDefault();
+  if (!isBoundV20(currentPatientIdV20())) { toast('Bind Rachel Tan in Care Network before using the emergency contact demo.'); return; }
+  const btn = $('holdEmergencyBtn');
+  const progress = $('holdProgress');
+  if (!btn || !progress || btn.disabled || btn.classList.contains('activated')) return;
+  clearTimeout(emergencyHoldTimer);
+  clearInterval(emergencyProgressTimer);
+  emergencyHoldStarted = Date.now();
+  btn.classList.add('holding');
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = `Keep holding to call ${V20_CAREGIVER.name}...`;
+  emergencyProgressTimer = setInterval(() => {
+    const elapsed = Date.now() - emergencyHoldStarted;
+    progress.style.width = `${Math.min(100, elapsed / 3000 * 100)}%`;
+  }, 40);
+  emergencyHoldTimer = setTimeout(triggerEmergencyContact, 3000);
+}
+
+function triggerEmergencyContact() {
+  clearTimeout(emergencyHoldTimer);
+  clearInterval(emergencyProgressTimer);
+  const btn = $('holdEmergencyBtn');
+  const progress = $('holdProgress');
+  if (progress) progress.style.width = '100%';
+  if (btn) {
+    btn.classList.remove('holding');
+    btn.classList.add('activated');
+  }
+  if ($('emergencyStatus')) $('emergencyStatus').textContent = `Emergency contact call activated: ${V20_CAREGIVER.name}.`;
+  toast('Emergency contact call activated in this demo.');
+  openModal('Emergency contact', `<div class="insight-summary"><div class="insight-icon">!</div><div><strong>Calling ${esc(V20_CAREGIVER.name)}</strong><p>This classroom prototype has activated the emergency contact flow. A production version would connect to the approved local calling or emergency workflow.</p></div></div><div class="modal-actions"><button class="button secondary" id="resetEmergencyDemo">Reset demo call</button><button class="button primary" id="closeEmergencyModal">Done</button></div>`);
+  $('resetEmergencyDemo').onclick = () => { if (btn) btn.classList.remove('activated'); closeModal(); resetEmergencyHold(); updatePatientCaregiverUIV20(); };
+  $('closeEmergencyModal').onclick = closeModal;
+}
+
+function resetDemoData(){
+  setJSON(STORE.readings,DEFAULT_READINGS);
+  setJSON(STORE.meds,DEFAULT_MEDS);
+  setJSON(STORE.caregivers,DEFAULT_CAREGIVERS);
+  setJSON(STORE.week,DEFAULT_WEEK);
+  setJSON(STORE.sharing,{bp:true,hr:true,meds:true,sleep:false});
+  setJSON(STORE.checkins, DEFAULT_CHECKINS);
+  setJSON(V20_BINDINGS_KEY, V20_DEFAULT_BINDINGS);
+  localStorage.setItem(STORE.wearable,'false');
+  chatHistory=[];
+  renderAll();
+  toast('Demo data restored.');
+}
+
+function renderAll(){
+  applyRoleShellV20();
+  updateProfileUI();
+  if (currentRoleV20() === 'caregiver') {
+    renderCaregiverPatients();
+    return;
+  }
+  renderDashboard();
+  renderMonitoring();
+  renderMedication();
+  renderCaregivers();
+  renderCheckinHistory();
+  renderAssistantContext();
+  renderInsightsMeta();
+  syncApiUI();
+  syncLargeTextUI();
+  updatePatientCaregiverUIV20();
+}
+
 function init(){
   if(!localStorage.getItem(STORE.readings)) setJSON(STORE.readings,DEFAULT_READINGS);
   if(!localStorage.getItem(STORE.meds)) setJSON(STORE.meds,DEFAULT_MEDS);

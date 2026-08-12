@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="CareLink SG — AI-enabled community health prototype for Healthcare Beyond Hospitals." />
   <title>CareLink SG — Community Health Companion</title>
-  <link rel="icon" type="image/png" href="carelink-logo.png?v=multi-end-19" />
+  <link rel="icon" type="image/png" href="carelink-logo.png?v=two-role-20" />
   <meta name="theme-color" content="#113c3d" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="styles.css?v=multi-end-19" />
+  <link rel="stylesheet" href="styles.css?v=two-role-20" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
-  <script src="app.js?v=multi-end-19" defer></script>
+  <script src="app.js?v=two-role-20" defer></script>
 </head>
 <body>
   <section class="auth-screen" id="authScreen" aria-label="Authentication">
@@ -40,7 +40,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">
-          <img src="carelink-logo.png?v=multi-end-19" alt="" />
+          <img src="carelink-logo.png?v=two-role-20" alt="" />
         </div>
         <div class="brand-copy">
           <strong class="brand-name"><span class="brand-care">CareLink</span><span class="brand-sg">SG</span></strong>
@@ -49,17 +49,17 @@
       </div>
 
       <nav class="nav" aria-label="Main navigation">
-        <button class="nav-item active" data-view="dashboard"><span>⌂</span> Dashboard</button>
-        <button class="nav-item" data-view="checkin"><span>◍</span> Check-in</button>
-        <button class="nav-item" data-view="monitoring"><span>⌁</span> Health Monitoring</button>
-        <button class="nav-item" data-view="insights"><span>✦</span> AI Insights</button>
-        <button class="nav-item" data-view="medication"><span>◉</span> Medication</button>
-        <button class="nav-item" data-view="exercises"><span>▣</span> Exercises</button>
-        <button class="nav-item" data-view="care"><span>♡</span> Care Network</button>
-        <button class="nav-item" data-view="caregiver"><span>👥</span> Caregiver View</button>
-        <button class="nav-item" data-view="community"><span>⌖</span> Community Care</button>
-        <button class="nav-item" data-view="assistant"><span>✧</span> AI Assistant</button>
-        <button class="nav-item" data-view="settings"><span>⚙</span> Settings</button>
+        <button class="nav-item active" data-view="dashboard" data-role-nav="patient"><span>⌂</span> Dashboard</button>
+        <button class="nav-item" data-view="checkin" data-role-nav="patient"><span>◍</span> Check-in</button>
+        <button class="nav-item" data-view="monitoring" data-role-nav="patient"><span>⌁</span> Health Monitoring</button>
+        <button class="nav-item" data-view="insights" data-role-nav="patient"><span>✦</span> AI Insights</button>
+        <button class="nav-item" data-view="medication" data-role-nav="patient"><span>◉</span> Medication</button>
+        <button class="nav-item" data-view="exercises" data-role-nav="patient"><span>▣</span> Exercises</button>
+        <button class="nav-item" data-view="care" data-role-nav="patient"><span>♡</span> Care Network</button>
+        <button class="nav-item" data-view="community" data-role-nav="patient"><span>⌖</span> Community Care</button>
+        <button class="nav-item" data-view="assistant" data-role-nav="patient"><span>✧</span> AI Assistant</button>
+        <button class="nav-item" data-view="settings" data-role-nav="patient"><span>⚙</span> Settings</button>
+        <button class="nav-item" data-view="caregiver" data-role-nav="caregiver"><span>👥</span> Caregiver Dashboard</button>
       </nav>
 
       <div class="sidebar-footer">
@@ -119,10 +119,10 @@
           </div>
           <div class="home-essential-contact">
             <div class="emergency-contact-card compact-contact">
-              <span class="avatar mini-avatar">RT</span>
+              <span class="avatar mini-avatar" id="homeCaregiverInitials">RT</span>
               <div>
-                <strong>Rachel Tan</strong>
-                <span>Daughter · Primary emergency contact</span>
+                <strong id="homeCaregiverName">Rachel Tan</strong>
+                <span id="homeCaregiverRelation">Daughter · Primary emergency contact</span>
               </div>
             </div>
             <button class="emergency-hold-button compact-hold" id="holdEmergencyBtn" type="button" aria-describedby="emergencyHint">
@@ -453,7 +453,7 @@
       </section>
 
       <section class="view" id="view-care">
-        <div class="section-intro"><div><p class="eyebrow">CONNECTED CARE</p><h2>Care Network</h2><p>Give users control over what health information is shared with trusted supporters.</p></div><button class="button primary" id="addCaregiverBtn">+ Add caregiver</button></div>
+        <div class="section-intro"><div><p class="eyebrow">CONNECTED CARE</p><h2>Care Network</h2><p>Bind or unbind your approved caregiver account. The caregiver can only see your colour status in this demo.</p></div><button class="button primary" id="addCaregiverBtn">Bind caregiver</button></div>
 
         <div class="care-grid" id="caregiverList"></div>
 
@@ -475,11 +475,11 @@
       <section class="view" id="view-caregiver">
         <div class="section-intro">
           <div>
-            <p class="eyebrow">CAREGIVER TERMINAL</p>
-            <h2>Caregiver View</h2>
-            <p>Shows the status colour for every bound patient only. Detailed health data stays in the patient view.</p>
+            <p class="eyebrow">CAREGIVER END</p>
+            <h2>Caregiver Dashboard</h2>
+            <p>Rachel Tan can see only the colour status of patients who are currently bound to her caregiver account.</p>
           </div>
-          <span class="status-chip blue">Multi-end demo</span>
+          <span class="status-chip blue">Separate caregiver account</span>
         </div>
 
         <article class="card caregiver-terminal-card">
@@ -488,23 +488,32 @@
               <p class="eyebrow">BOUND PATIENTS</p>
               <h3>Patient status overview</h3>
             </div>
-            <span class="subtle">Status only · no readings shown</span>
+            <span class="subtle">Status only · no detailed readings shown</span>
           </div>
           <div class="patient-status-grid" id="caregiverPatientList"></div>
         </article>
 
-        <article class="card status-legend-card">
-          <p class="eyebrow">STATUS LEGEND</p>
-          <div class="status-legend-row">
-            <span class="legend-dot healthy"></span><strong>Healthy</strong><small>Green status means the patient is currently stable in this prototype.</small>
-          </div>
-          <div class="status-legend-row">
-            <span class="legend-dot danger"></span><strong>Danger</strong><small>Yellow status means the patient may need caregiver attention.</small>
-          </div>
-          <div class="status-legend-row">
-            <span class="legend-dot urgent"></span><strong>Urgent</strong><small>Red status means the patient should be checked immediately.</small>
-          </div>
-        </article>
+        <div class="two-col caregiver-binding-grid">
+          <article class="card status-legend-card">
+            <p class="eyebrow">STATUS LEGEND</p>
+            <div class="status-legend-row">
+              <span class="legend-dot healthy"></span><strong>Healthy</strong><small>Green means the patient is currently stable in this prototype.</small>
+            </div>
+            <div class="status-legend-row">
+              <span class="legend-dot danger"></span><strong>Danger</strong><small>Yellow means the patient may need caregiver attention.</small>
+            </div>
+            <div class="status-legend-row">
+              <span class="legend-dot urgent"></span><strong>Urgent</strong><small>Red means the patient should be checked immediately.</small>
+            </div>
+          </article>
+
+          <article class="card caregiver-bind-card">
+            <p class="eyebrow">BINDING CONTROL</p>
+            <h3>Manage patient links</h3>
+            <p class="subtle">Use this classroom demo control to bind or unbind Rachel Tan from the available patient accounts.</p>
+            <div class="bind-control-list" id="caregiverBindList"></div>
+          </article>
+        </div>
       </section>
 
       <section class="view" id="view-community">
