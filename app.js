@@ -904,8 +904,8 @@ function setPatientBindingV20(patientId, bound) { bound ? bindPatientV20(patient
 
 /* v24 Rachel parents pre-bound migration
    Ensures Rachel Tan's father and mother appear in the caregiver dashboard by default.
-   Runs once per browser so users can still unbind/rebind during the demo after the migration. */
-const V24_RACHEL_PARENTS_BOUND_KEY = 'carelink_rachel_parents_bound_v24';
+   Runs once per v25 browser state so older cached/unbound demo data is repaired, while users can still unbind/rebind during the demo after this migration. */
+const V24_RACHEL_PARENTS_BOUND_KEY = 'carelink_rachel_parents_bound_v25';
 function ensureRachelParentsBoundV24() {
   if (localStorage.getItem(V24_RACHEL_PARENTS_BOUND_KEY) === 'true') return;
   const required = [
